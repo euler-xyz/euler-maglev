@@ -243,7 +243,7 @@ export function useVaultsPersonalInfo(me, subAccountBitmask) {
     return useQuery({
         queryKey: ['maglev-vaults-personal', currChain?.chainId, me, subAccountBitmask.toString()],
         staleTime: 60 * 1000,
-        enabled: !pending1 && !pending2,
+        enabled: !!me && !pending1 && !pending2,
         queryFn: async () => {
             let vaultAddrs = Object.keys(labels);
 
@@ -341,7 +341,7 @@ export function useAllowance(token, owner, spender) {
     let { data: currChain, isPending: pending1 } = useEulerChain();
     let client = usePublicClient();
 
-    let enabled = !!(token && !pending1);
+    let enabled = !!(token && owner && !pending1);
 
     return useQuery({
         queryKey: ['maglev-allowance', currChain?.chainId, token, owner, spender],

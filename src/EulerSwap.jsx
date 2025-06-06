@@ -700,7 +700,7 @@ export function EulerSwapBrowse(props) {
 
     if (!eulerSwapData || !ctx.ready) return "Loading...";
 
-    let swapReady = slip !== undefined && allowance != undefined;
+    let swapReady = slip !== undefined && (!ctx.connected || allowance !== undefined);
 
     let rows = [];
 
@@ -744,7 +744,10 @@ export function EulerSwapBrowse(props) {
             row.q = quote;
             row.quote = <span className="font-bold">{ctx.renderUnderlying(quoteVault, quote)}</span>;
 
-            if (swapAmountParsed > allowance) {
+            console.log(ctx.connected);
+            if (!ctx.connected) {
+                row.swap = <Button disabled>Swap</Button>;
+            } else if (swapAmountParsed > allowance) {
                 row.swap = <Button onClick={() => doApprove(exactIn ? swapAmountParsed : quote)}>Approve</Button>;
             } else {
                 row.swap = <Button onClick={() => doSwap(e, quote)}>Swap</Button>;

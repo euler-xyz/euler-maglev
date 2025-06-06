@@ -14,6 +14,7 @@ export class GlobalContext {
         this.account = useAccount();
         this.myPrimaryAddr = this.account.address;
         this.myAddr = this.account.address && Utils.getSubAccountAddress(this.account.address, subAccount);
+        this.connected = !!this.myPrimaryAddr;
 
         this.client = usePublicClient();
         let { data: walletClient } = useWalletClient();
@@ -35,12 +36,11 @@ export class GlobalContext {
         this.prices = prices;
         this.vaultsPersonal = vaultsPersonal;
 
-        //console.log(!!this.labels, !!this.vaultsStatic, !!this.vaultsGlobal, !!this.prices, !!this.vaultsPersonal);
-        this.ready = this.labels && this.vaultsStatic && this.vaultsGlobal && this.prices && this.vaultsPersonal;
+        this.ready = this.labels && this.vaultsStatic && this.vaultsGlobal && this.prices && (!this.connected || this.vaultsPersonal);
 
         if (this.ready) {
             this._collectAssets();
-            this._aggregateSubAccounts();
+            if (this.connected) this._aggregateSubAccounts();
         }
     }
 

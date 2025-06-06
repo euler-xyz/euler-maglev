@@ -17,6 +17,7 @@ export function AccountPanel() {
     let ctx = useGlobalContext(numAccounts, activeTab);
 
     if (!ctx.ready) return "Loading...";
+    if (!ctx.connected) return "Please connect your wallet.";
 
     let tabs = [];
 
