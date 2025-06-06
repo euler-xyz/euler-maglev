@@ -715,8 +715,8 @@ export function EulerSwapBrowse(props) {
         }
     };
 
-    let doApprove = async () => {
-        await EulerSwapUtils.doApprove(ctx, assetAInfo?.addr, ctx.currChain?.addresses.eulerSwapAddrs.eulerSwapPeriphery, swapAmountParsed);
+    let doApprove = async (approveAmount) => {
+        await EulerSwapUtils.doApprove(ctx, assetAInfo?.addr, ctx.currChain?.addresses.eulerSwapAddrs.eulerSwapPeriphery, approveAmount);
     };
 
     for (let i = 0; i < eulerSwapData.length; i++) {
@@ -745,7 +745,7 @@ export function EulerSwapBrowse(props) {
             row.quote = <span className="font-bold">{ctx.renderUnderlying(quoteVault, quote)}</span>;
 
             if (swapAmountParsed > allowance) {
-                row.swap = <Button onClick={() => doApprove()}>Approve</Button>;
+                row.swap = <Button onClick={() => doApprove(exactIn ? swapAmountParsed : quote)}>Approve</Button>;
             } else {
                 row.swap = <Button onClick={() => doSwap(e, quote)}>Swap</Button>;
             }

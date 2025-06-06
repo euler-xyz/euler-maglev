@@ -50,7 +50,6 @@ export async function creationCode(ctx, params) {
 }
 
 export async function deployEulerSwap(ctx, params, initialState, oldReserves) {
-
     console.log('DEPLOYING EULERSWAP', params, initialState);
     let [predictedAddress, salt] = await genAddress(ctx, params);
 

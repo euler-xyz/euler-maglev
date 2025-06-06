@@ -1,3 +1,5 @@
+! show vaults etc even when wallet not connected
+
 ! factor decimals logic (FIXME factor)
 ! each sub-account tab should get its own URL route
 ! spy mode
