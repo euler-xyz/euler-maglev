@@ -4,11 +4,11 @@ import { generatePrivateKey } from 'viem/accounts';
 import * as Lens from './Lens';
 import * as Utils from './Utils';
 
-import evcAbi from '../../euler-devland/out/EthereumVaultConnector.sol/EthereumVaultConnector.json';
-import iEulerSwapAbi from '../../euler-devland/out/IEulerSwap.sol/IEulerSwap.json';
-import iEulerSwapPeripheryAbi from '../../euler-devland/out/IEulerSwapPeriphery.sol/IEulerSwapPeriphery.json';
-import eulerSwapFactoryAbi from '../../euler-devland/out/EulerSwapFactory.sol/EulerSwapFactory.json';
-import maglevLensAbi from '../../euler-devland/out/MaglevLens.sol/MaglevLens.json';
+import evcAbi from '../abis/EthereumVaultConnector.json';
+import iEulerSwapAbi from '../abis/IEulerSwap.json';
+import iEulerSwapPeripheryAbi from '../abis/IEulerSwapPeriphery.json';
+import eulerSwapFactoryAbi from '../abis/EulerSwapFactory.json';
+import maglevLensAbi from '../abis/MaglevLens.json';
 
 const paramsAbi = iEulerSwapAbi.abi.find(item => item.name === 'getParams').outputs;
 

@@ -5,11 +5,15 @@ import { usePublicClient, useChainId } from 'wagmi';
 import { getChainConfigs } from './ChainConfig';
 import * as Utils from './Utils';
 
-import maglevLensAbi from '../../euler-devland/out/MaglevLens.sol/MaglevLens.json';
+import maglevLensAbi from '../abis/MaglevLens.json';
 
-import products31337 from '../../euler-devland/dev-ctx/labels/31337/products.json';
-import prices31337 from '../../euler-devland/dev-ctx/priceapi/31337/prices.json';
+let products31337;
+let prices31337;
 
+if (import.meta.env.DEV) {
+    products31337 = (await import('../../euler-devland/dev-ctx/labels/31337/products.json')).default;
+    prices31337 = (await import('../../euler-devland/dev-ctx/priceapi/31337/prices.json')).default;
+}
 
 
 

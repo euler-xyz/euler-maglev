@@ -1,11 +1,19 @@
 import { createPublicClient, http } from "viem";
 import * as viemChains from "viem/chains";
 
-import eulerChainsInterfaces from '../../euler-devland/libflat/euler-interfaces/EulerChains.json';
-import eulerChainsDevLand from '../../euler-devland/dev-ctx/EulerChains.json';
+import eulerChainsInterfaces from '../abis/EulerChains.json';
+
+let eulerChainsDevLand;
+
+if (import.meta.env.DEV) {
+    eulerChainsDevLand = (await import('../../euler-devland/dev-ctx/EulerChains.json')).default;
+} else {
+    eulerChainsDevLand = [];
+}
+
 
 export function getChainConfigs() {
-    let chains = [ ...eulerChainsInterfaces, ...eulerChainsDevLand ];
+    let chains = [ ...eulerChainsInterfaces, ...eulerChainsDevLand, ];
 
     for (let chain of chains) {
         // FIXME: no need to override this when it's in addresses
