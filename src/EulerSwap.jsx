@@ -254,12 +254,16 @@ export function EulerSwapViz(props) {
     let navMidpointPixel = fundSpaceToPixel(width, domain, navMidpoint);
 
 
+    let loadPrice = () => {
+        return ctx.vaultAssetPrice(props.vault0) / ctx.vaultAssetPrice(props.vault1);
+    };
+
     if (!params) {
         setParams(props.initialParams ? decodeRawParams(ctx, props.vault0, props.vault1, navMidpoint, props.initialParams, props.currReserves) : {
             concentrationX: 90,
             concentrationY: 90,
             fee: 0.01,
-            price: 1, // FIXME: get price from API
+            price: loadPrice(),
             curveLeft: ltv0,
             curveMid: 0,
             curveRight: ltv1,
@@ -510,6 +514,7 @@ export function EulerSwapViz(props) {
                     <div className="p-inputgroup flex-1">
                         <span className="p-inputgroup-addon">{ctx.renderVaultAsset(props.vault0)}/{ctx.renderVaultAsset(props.vault1)}</span>
                         <InputText id="price-input" value={params.price} onChange={(e) => setPrice(e.target.value)} />
+                        <Button label="⟳" onClick={() => setPrice(loadPrice())} />
                     </div>
                 </div>
             </div>

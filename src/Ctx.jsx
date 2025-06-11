@@ -89,22 +89,28 @@ export class GlobalContext {
         return decimals;
     }
 
+    vaultAssetPrice(vaultAddr) {
+        let price = this.prices[this.vaultsStatic[vaultAddr].asset];
+        if (!price) return NaN;
+        return price.price;
+    }
+
     amountToValue(vaultAddr, amount) {
         let decimals = this.vaultDecimals(vaultAddr);
 
-        let price = this.prices[this.vaultsStatic[vaultAddr].asset];
-        if (!price) return NaN;
+        let price = this.vaultAssetPrice(vaultAddr);
+        if (isNaN(price)) return NaN;
 
-        return amount * parseUnits(fromExponential(price.price), 18) / 10n**(BigInt(decimals));
+        return amount * parseUnits(fromExponential(price), 18) / 10n**(BigInt(decimals));
     }
 
     valueToAmount(vaultAddr, value) {
         let decimals = this.vaultDecimals(vaultAddr);
 
-        let price = this.prices[this.vaultsStatic[vaultAddr].asset];
-        if (!price) return NaN;
+        let price = this.vaultAssetPrice(vaultAddr);
+        if (isNaN(price)) return NaN;
 
-        return parseUnits(fromExponential(value), decimals) * 10n**(BigInt(18)) / parseUnits(price.price.toString(), 18);
+        return parseUnits(fromExponential(value), decimals) * 10n**(BigInt(18)) / parseUnits(price.toString(), 18);
     }
 
     numTo18Scale(v) {
