@@ -749,7 +749,6 @@ export function EulerSwapBrowse(props) {
             row.q = quote;
             row.quote = <span className="font-bold">{ctx.renderUnderlying(quoteVault, quote)}</span>;
 
-            console.log(ctx.connected);
             if (!ctx.connected) {
                 row.swap = <Button disabled>Swap</Button>;
             } else if (swapAmountParsed > allowance) {

@@ -1,9 +1,6 @@
-! show vaults etc even when wallet not connected
-
 ! factor decimals logic (FIXME factor)
 ! each sub-account tab should get its own URL route
 ! spy mode
-! populate equilibrium price from price API
 * figure out better solution for RPC URLs
 * on swap browse, show current marginal prices of pools
 * dynamic fetch of labels
@@ -18,15 +15,3 @@ Bugs
 
 ! fees and concentration factors shouldn't round-trip through JS Numbers
 * fix hardcoded gas limits (foundry problem?)
-
-
-
-------- EulerSwap v2
-
-* Asymmetric fees
-* Borrow-from vs supply-to vaults for each asset
-* Dynamic fee auctions after a swap
-  * Initial fee auction after deployment to minimise initial arbitrage loss
-* Direct fee to different address
-* Uni-directional swapping, and stopping-conditions
-  * Limit orders
