@@ -8,12 +8,14 @@ import * as Utils from './Utils';
 
 
 export class GlobalContext {
-    constructor(numAccounts, subAccount) {
-        this.numAccounts = numAccounts;
-        this.subAccount = subAccount;
-        this.account = useAccount();
-        this.myPrimaryAddr = this.account.address;
-        this.myAddr = this.account.address && Utils.getSubAccountAddress(this.account.address, subAccount);
+    constructor(opts) {
+        if (!opts) opts = {};
+        this.numAccounts = opts.numAccounts || 1;
+        this.subAccount = opts.subAccount || 0;
+        let wagmiAccount = useAccount();
+        this.myPrimaryAddr = opts.addr || wagmiAccount?.account?.address;
+
+        this.myAddr = this.myPrimaryAddr && Utils.getSubAccountAddress(this.myPrimaryAddr, this.subAccount);
         this.connected = !!this.myPrimaryAddr;
 
         this.wagmiConfig = useConfig();
@@ -28,7 +30,7 @@ export class GlobalContext {
         let { data: vaultsGlobal } = Lens.useVaultsGlobal();
         let { data: prices } = Lens.usePrices();
 
-        let { data: vaultsPersonal } = Lens.useVaultsPersonalInfo(this.account.address, (1n << BigInt(numAccounts)) - 1n);
+        let { data: vaultsPersonal } = Lens.useVaultsPersonalInfo(this.myPrimaryAddr, (1n << BigInt(this.numAccounts)) - 1n);
 
         this.currChain = currChain;
         this.labels = labels;
@@ -254,6 +256,6 @@ export class GlobalContext {
     }
 }
 
-export function useGlobalContext(numAccounts, subAccount) {
-    return new GlobalContext(numAccounts, subAccount);
+export function useGlobalContext(opts) {
+    return new GlobalContext(opts);
 }

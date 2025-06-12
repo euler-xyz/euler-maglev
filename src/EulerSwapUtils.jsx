@@ -111,7 +111,7 @@ export async function deployEulerSwap(ctx, params, initialState, oldReserves) {
     });
 
     await Utils.executeTxn(ctx, {
-        account: ctx.account.address,
+        account: ctx.myPrimaryAddr,
         address: ctx.currChain.addresses.coreAddrs.evc,
         abi: evcAbi.abi,
         functionName: 'batch',
@@ -156,7 +156,7 @@ export async function uninstallEulerSwap(ctx) {
     });
 
     await Utils.executeTxn(ctx, {
-        account: ctx.account.address,
+        account: ctx.myPrimaryAddr,
         address: ctx.currChain.addresses.coreAddrs.evc,
         abi: evcAbi.abi,
         functionName: 'batch',
@@ -171,11 +171,11 @@ export async function doSwapExactIn(ctx, eulerSwap, tokenIn, tokenOut, amountIn,
     console.log("DOING EXACTIN SWAP", eulerSwap, tokenIn, tokenOut, amountIn, amountOutMin);
 
     await Utils.executeTxn(ctx, {
-        account: ctx.account.address,
+        account: ctx.myPrimaryAddr,
         address: ctx.currChain.addresses.eulerSwapAddrs.eulerSwapPeriphery,
         abi: iEulerSwapPeripheryAbi.abi,
         functionName: 'swapExactIn',
-        args: [eulerSwap, tokenIn, tokenOut, amountIn, ctx.account.address, amountOutMin, 0n],
+        args: [eulerSwap, tokenIn, tokenOut, amountIn, ctx.myPrimaryAddr, amountOutMin, 0n],
     });
 }
 
@@ -183,11 +183,11 @@ export async function doSwapExactOut(ctx, eulerSwap, tokenIn, tokenOut, amountOu
     console.log("DOING EXACTOUT SWAP", eulerSwap, tokenIn, tokenOut, amountOut, amountInMax);
 
     await Utils.executeTxn(ctx, {
-        account: ctx.account.address,
+        account: ctx.myPrimaryAddr,
         address: ctx.currChain.addresses.eulerSwapAddrs.eulerSwapPeriphery,
         abi: iEulerSwapPeripheryAbi.abi,
         functionName: 'swapExactOut',
-        args: [eulerSwap, tokenIn, tokenOut, amountOut, ctx.account.address, amountInMax, 0n],
+        args: [eulerSwap, tokenIn, tokenOut, amountOut, ctx.myPrimaryAddr, amountInMax, 0n],
     });
 }
 

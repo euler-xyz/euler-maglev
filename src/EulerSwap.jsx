@@ -670,7 +670,7 @@ export function EulerSwapPanel(props) {
 
 
 export function EulerSwapBrowse(props) {
-    let ctx = useGlobalContext(1, 0);
+    let ctx = useGlobalContext();
 
     let [assetA, setAssetA] = useState();
     let [assetB, setAssetB] = useState();
@@ -835,13 +835,12 @@ export function EulerSwapBrowse(props) {
 
 
 export function EulerSwapShowInstance(props) {
-    let ctx = useGlobalContext(1, 0);
     let params = useParams();
+    let ctx = useGlobalContext({ addr: params.account, });
     let { data: myEulerSwap } = Lens.useMyEulerSwap(params.account);
 
     if (!ctx.ready) return "Loading...";
     let existing = myEulerSwap && myEulerSwap.addr !== zeroAddress ? myEulerSwap.addr : undefined;
-    console.log(myEulerSwap);
 
     return <div>
         <div className="text-xl">

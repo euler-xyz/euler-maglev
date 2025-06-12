@@ -14,7 +14,7 @@ import { EulerSwapPanel } from "./EulerSwap";
 export function AccountPanel() {
     let [activeTab, setActiveTab] = useState(0);
     let [numAccounts, setNumAccounts] = useState(3);
-    let ctx = useGlobalContext(numAccounts, activeTab);
+    let ctx = useGlobalContext({ numAccounts, subAccount: activeTab, });
 
     if (!ctx.ready) return "Loading...";
     if (!ctx.connected) return "Please connect your wallet.";

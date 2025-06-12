@@ -18,7 +18,7 @@ export function VaultList() {
     let [numRows, setNumRows] = useState(10);
     let [search, setSearch] = useState('');
 
-    let ctx = useGlobalContext(1, 0);
+    let ctx = useGlobalContext();
 
     if (!ctx.ready) return "Loading...";
 
