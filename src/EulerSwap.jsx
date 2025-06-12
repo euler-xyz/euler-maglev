@@ -232,8 +232,8 @@ export function EulerSwapViz(props) {
     let maxDomain = 1.05 * navNum / (1 - Math.max(ltvPair[0], ltvPair[1]));
     if (domain === undefined) setDomain(props.initialDomain || maxDomain);
 
-    let ltv0 = -navNum / (1 - ltvPair[0]);
-    let ltv1 = navNum / (1 - ltvPair[1]);
+    let ltv0 = -navNum / (1 - ltvPair[1]);
+    let ltv1 = navNum / (1 - ltvPair[0]);
 
 
     let navMidpoint;
