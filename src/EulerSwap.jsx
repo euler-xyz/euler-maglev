@@ -302,11 +302,7 @@ export function EulerSwapViz(props) {
     };
 
 
-    let priceParsed;
-    try {
-        priceParsed = parseUnits(''+params.price, 18);
-        if (priceParsed === 0n) priceParsed = undefined;
-    } catch (e) {}
+    let parsedPrice = EulerSwapUtils.computePriceFraction(params.price, ctx.vaultDecimals(props.vault0), ctx.vaultDecimals(props.vault1));
 
     let feeParsed;
     try {
@@ -333,8 +329,8 @@ export function EulerSwapViz(props) {
 
         equilibriumReserve0: ctx.valueToAmount(props.vault0, params.curveRight - params.curveMid),
         equilibriumReserve1: ctx.valueToAmount(props.vault1, params.curveMid - params.curveLeft),
-        priceX: priceParsed === undefined ? undefined : 10n**(BigInt(ctx.vaultDecimals(props.vault1))) * priceParsed / EulerSwapUtils.c1e18,
-        priceY: priceParsed === undefined ? undefined : 10n**(BigInt(ctx.vaultDecimals(props.vault0))),
+        priceX: parsedPrice[0],
+        priceY: parsedPrice[1],
         concentrationX: concentrationXParsed,
         concentrationY: concentrationYParsed,
 

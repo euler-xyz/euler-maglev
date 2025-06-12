@@ -1,4 +1,4 @@
-import { getAddress, encodeAbiParameters, parseAbi, zeroAddress, encodeFunctionData, encodePacked, keccak256, fromHex, toHex } from 'viem';
+import { parseUnits, getAddress, encodeAbiParameters, parseAbi, zeroAddress, encodeFunctionData, encodePacked, keccak256, fromHex, toHex } from 'viem';
 import { generatePrivateKey } from 'viem/accounts';
 
 import * as Lens from './Lens';
@@ -363,4 +363,37 @@ export function fInverse(y, px, py, x0, y0, cx) {
     }
 
     return x;
+}
+
+
+
+
+export function computePriceFraction(price, decimals0, decimals1) {
+    let price18scale;
+    let inverted = false;
+
+    try {
+        price = parseFloat(price);
+        if (isNaN(price) || !price) throw Error('not a valid price');
+        if (price < 1) {
+            inverted = true;
+            price = 1 / price;
+        }
+        price18scale = parseUnits(price.toString(), 18);
+    } catch (e) {
+        return [undefined, undefined];
+    }
+
+    let output = [
+        10n**(BigInt(decimals1)),
+        10n**(BigInt(decimals0)),
+    ];
+
+    if (!inverted) {
+        output[0] = output[0] * price18scale / c1e18;
+    } else {
+        output[1] = output[1] * price18scale / c1e18;
+    }
+
+    return output;
 }
