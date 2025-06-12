@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { useWalletClient, usePublicClient, useAccount } from 'wagmi';
+import { useConfig, useWalletClient, usePublicClient, useAccount } from 'wagmi';
 import { parseUnits, formatUnits } from "viem";
 import fromExponential from 'from-exponential';
 
@@ -16,6 +16,7 @@ export class GlobalContext {
         this.myAddr = this.account.address && Utils.getSubAccountAddress(this.account.address, subAccount);
         this.connected = !!this.myPrimaryAddr;
 
+        this.wagmiConfig = useConfig();
         this.client = usePublicClient();
         let { data: walletClient } = useWalletClient();
         this.walletClient = walletClient;
@@ -35,10 +36,12 @@ export class GlobalContext {
         this.vaultsGlobal = vaultsGlobal;
         this.prices = prices;
         this.vaultsPersonal = vaultsPersonal;
+        this.chainConfigs = {};
 
         this.ready = this.labels && this.vaultsStatic && this.vaultsGlobal && this.prices && (!this.connected || this.vaultsPersonal);
 
         if (this.ready) {
+            this._setupChainConfigs();
             this._collectAssets();
             if (this.connected) this._aggregateSubAccounts();
         }
@@ -193,6 +196,16 @@ export class GlobalContext {
     }
 
 
+    etherscanAddress(addr, text) {
+        if (!this.currChain) return addr;
+        let config = this.chainConfigs[this.currChain.chainId];
+        let url = config?.blockExplorers?.default?.url;
+        if (!url) return addr;
+
+        return <a href={`${url}/address/${addr}`}>{text || addr}</a>
+    }
+
+
     _collectAssets() {
         this.knownAssets = {};
 
@@ -230,6 +243,14 @@ export class GlobalContext {
         }
 
         this.subAccounts = o;
+    }
+
+    _setupChainConfigs() {
+        if (!this.wagmiConfig) return;
+
+        for (let c of this.wagmiConfig.chains) {
+            this.chainConfigs[c.id] = c;
+        }
     }
 }
 

@@ -270,7 +270,7 @@ export function useMyEulerSwap(myAddr) {
     return useQuery({
         queryKey: ['maglev-eulerSwap', 'my', currChain?.chainId, myAddr],
         staleTime: 60 * 1000,
-        enabled: !pending1,
+        enabled: !!myAddr && !pending1,
         throwOnError: true,
         queryFn: async () => {
             let raw = await client.readContract({

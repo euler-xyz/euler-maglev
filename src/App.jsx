@@ -8,7 +8,7 @@ import { Route, Routes, Link, NavLink } from "react-router-dom";
 import { getWagmiChainConfigs } from './ChainConfig';
 import { VaultList } from './VaultList';
 import { AccountPanel } from './Account';
-import { EulerSwapBrowse } from './EulerSwap';
+import { EulerSwapBrowse, EulerSwapShowInstance } from './EulerSwap';
 
 
 const wagmiConfig = getDefaultConfig({
@@ -48,6 +48,7 @@ function Main() {
             <Route path="/" element={<VaultList />} />
             <Route path="/account/" element={<AccountPanel />} />
             <Route path="/euler-swap/" element={<EulerSwapBrowse />} />
+            <Route path="/euler-swap/:account" element={<EulerSwapShowInstance />} />
         </Routes>
     </div>
 }

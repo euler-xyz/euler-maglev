@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { useAccount } from 'wagmi';
 import { zeroAddress, parseUnits, formatUnits } from "viem";
+import { Link, useParams } from "react-router-dom";
 
 import Draggable from 'react-draggable';
 import useDimensions from "react-cool-dimensions";
@@ -731,6 +732,7 @@ export function EulerSwapBrowse(props) {
         if (assetBInfo && e.asset0 !== assetBInfo.addr && e.asset1 !== assetBInfo.addr) continue;
 
         let row = {
+            account: <Link to={`/euler-swap/${e.params.eulerAccount}`}>{e.params.eulerAccount.substr(0,8)}...</Link>,
             vault0: ctx.renderVaultName(e.params.vault0),
             vault1: ctx.renderVaultName(e.params.vault1),
 
@@ -819,6 +821,7 @@ export function EulerSwapBrowse(props) {
         </div>
 
         <DataTable value={rows}>
+            <Column field="account" header="Account"></Column>
             <Column field="vault0" header="Vault 0"></Column>
             <Column field="amount0" header="Available 0"></Column>
             <Column field="vault1" header="Vault 1"></Column>
@@ -826,5 +829,31 @@ export function EulerSwapBrowse(props) {
             <Column field="quote" header="Quote"></Column>
             <Column field="swap" header="Swap"></Column>
         </DataTable>
+    </div>
+}
+
+
+
+export function EulerSwapShowInstance(props) {
+    let ctx = useGlobalContext(1, 0);
+    let params = useParams();
+    let { data: myEulerSwap } = Lens.useMyEulerSwap(params.account);
+
+    if (!ctx.ready) return "Loading...";
+    let existing = myEulerSwap && myEulerSwap.addr !== zeroAddress ? myEulerSwap.addr : undefined;
+    console.log(myEulerSwap);
+
+    return <div>
+        <div className="text-xl">
+            Account: <code>{params.account}</code> - {ctx.etherscanAddress(params.account, 'etherscan')}
+        </div>
+
+        {!existing && <div className="mt-4">No operator found.</div>}
+
+        {existing && <div style={{ width: '100%', }}>
+            <div className="text-xl mt-2">Operator: <code>{myEulerSwap.addr}</code> - {ctx.etherscanAddress(myEulerSwap.addr, 'etherscan')}</div>
+
+            <EulerSwapViz ctx={ctx} viewMode vault0={myEulerSwap.params.vault0} vault1={myEulerSwap.params.vault1} initialParams={myEulerSwap.params} currReserves={{ reserve0: myEulerSwap.reserve0, reserve1: myEulerSwap.reserve1, }} />
+        </div>}
     </div>
 }
