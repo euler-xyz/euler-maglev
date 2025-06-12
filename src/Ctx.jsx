@@ -13,7 +13,7 @@ export class GlobalContext {
         this.numAccounts = opts.numAccounts || 1;
         this.subAccount = opts.subAccount || 0;
         let wagmiAccount = useAccount();
-        this.myPrimaryAddr = opts.addr || wagmiAccount?.account?.address;
+        this.myPrimaryAddr = opts.addr || wagmiAccount?.address;
 
         this.myAddr = this.myPrimaryAddr && Utils.getSubAccountAddress(this.myPrimaryAddr, this.subAccount);
         this.connected = !!this.myPrimaryAddr;
@@ -40,6 +40,7 @@ export class GlobalContext {
         this.vaultsPersonal = vaultsPersonal;
         this.chainConfigs = {};
 
+        //console.log(!!this.labels, !!this.vaultsStatic, !!this.vaultsGlobal, !!this.prices, !!this.vaultsPersonal);
         this.ready = this.labels && this.vaultsStatic && this.vaultsGlobal && this.prices && (!this.connected || this.vaultsPersonal);
 
         if (this.ready) {
