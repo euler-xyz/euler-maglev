@@ -14,6 +14,12 @@ export function hex2a(inp) {
     return str;
 }
 
+const decoder = new TextDecoder('utf-8');
+
+export function utf8Decode(inp) {
+    return decoder.decode(Uint8Array.from(inp.split('').map(x => x.charCodeAt())));
+}
+
 export async function executeTxn(ctx, args) {
     //let gas = await ctx.client.estimateGas(args);
     let gas = 1000000n; // FIXME: estimateGas is very wrong, at least in dev?

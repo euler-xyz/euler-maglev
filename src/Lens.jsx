@@ -100,7 +100,7 @@ function decodeVaultStaticInfo(r, vault) {
     return {
         asset: getAddress(r.substr(0, 42)),
         decimals: parseInt(r.substr(42, 2), 16),
-        symbol: Utils.hex2a(r.substr(44)),
+        symbol: Utils.utf8Decode(Utils.hex2a(r.substr(44))),
         vault,
     };
 }
