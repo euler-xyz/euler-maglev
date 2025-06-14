@@ -63,10 +63,10 @@ export function useLabels() {
             let output = {};
 
             for (let chainId of Object.keys(orig)) {
-                output[chainId] = {};
+                output[chainId] = { vaults: {}, raw: orig[chainId], };
                 for (let product of Object.keys(orig[chainId])) {
                     for (let vault of orig[chainId][product].vaults) {
-                        output[chainId][vault] = product;
+                        output[chainId].vaults[vault] = product;
                     }
                 }
             }
@@ -115,7 +115,7 @@ export function useVaultsStaticInfo() {
         staleTime: Infinity,
         enabled: !pending1 && !pending2,
         queryFn: async () => {
-            let vaultAddrs = Object.keys(labels);
+            let vaultAddrs = Object.keys(labels.vaults);
 
             let raw = await client.readContract({
                 address: currChain.addresses.maglevAddrs.maglevLens,
@@ -166,7 +166,7 @@ export function useVaultsGlobal() {
         enabled: !pending1 && !pending2,
         throwOnError: true,
         queryFn: async () => {
-            let vaultAddrs = Object.keys(labels);
+            let vaultAddrs = Object.keys(labels.vaults);
 
             let raw = await client.readContract({
                 address: currChain.addresses.maglevAddrs.maglevLens,
@@ -211,6 +211,29 @@ export function useLTVPair(vault0, vault1) {
 }
 
 
+export function useLTVMatrix(vaults, liquidationLtv) {
+    let { data: currChain, isPending: pending1 } = useEulerChain();
+    let client = usePublicClient();
+
+    return useQuery({
+        queryKey: ['maglev-ltv-matrix', vaults, liquidationLtv],
+        staleTime: 60 * 1000,
+        enabled: vaults && !pending1,
+        throwOnError: true,
+        queryFn: async () => {
+            let raw = await client.readContract({
+                address: currChain.addresses.maglevAddrs.maglevLens,
+                abi: maglevLensAbi.abi,
+                functionName: 'getLTVMatrix',
+                args: [vaults, liquidationLtv],
+            });
+
+            return raw.map(v => v / 1e4);
+        },
+    });
+}
+
+
 
 
 function decodeVaultsPersonalInfo(me, subAccountBitmask, vaultAddrs, raw) {
@@ -245,7 +268,7 @@ export function useVaultsPersonalInfo(me, subAccountBitmask) {
         staleTime: 60 * 1000,
         enabled: !!me && !pending1 && !pending2,
         queryFn: async () => {
-            let vaultAddrs = Object.keys(labels);
+            let vaultAddrs = Object.keys(labels.vaults);
 
             let raw = await client.readContract({
                 address: currChain.addresses.maglevAddrs.maglevLens,

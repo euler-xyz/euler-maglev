@@ -61,3 +61,46 @@
         margin-right: 10px;
     }
 }
+
+
+
+.ltv-matrix {
+    margin-top: 100px;
+
+    th.rotated-text {
+        height: 50px;
+        white-space: nowrap;
+        padding: 0 !important;
+    }
+
+    th.rotated-text > div {
+        transform:
+            translate(13px, 0px)
+            rotate(310deg);
+        width: 30px;
+    }
+
+    th.rotated-text > div > span {
+        padding: 5px 10px;
+    }
+
+    tr.data-row:nth-child(odd) > td {
+        background-color: #343941;
+    }
+
+    tr.data-row:nth-child(even) > td {
+        background-color: #5a606a;
+    }
+
+    td.cell {
+        width: 50px;
+        height: 30px;
+        text-align: center;
+    }
+
+    th.row-header {
+        font-weight: bold;
+        padding-right: 20px;
+        text-align: right;
+    }
+}

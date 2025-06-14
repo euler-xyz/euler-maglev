@@ -7,6 +7,7 @@ import { Route, Routes, Link, NavLink } from "react-router-dom";
 
 import { getWagmiChainConfigs } from './ChainConfig';
 import { VaultList } from './VaultList';
+import { ProductsList, ProductInfo } from './Products';
 import { AccountPanel } from './Account';
 import { EulerSwapBrowse, EulerSwapShowInstance } from './EulerSwap';
 
@@ -40,13 +41,19 @@ function Main() {
 
         <div className="header-links">
             <NavLink to={`/`}>Vaults</NavLink>
+            <NavLink to={`/products/`}>Products</NavLink>
             <NavLink to={`/account/`}>Account</NavLink>
             <NavLink to={`/euler-swap/`}>Swap</NavLink>
         </div>
 
         <Routes>
             <Route path="/" element={<VaultList />} />
+
+            <Route path="/products/" element={<ProductsList />} />
+            <Route path="/products/:product" element={<ProductInfo />} />
+
             <Route path="/account/" element={<AccountPanel />} />
+
             <Route path="/euler-swap/" element={<EulerSwapBrowse />} />
             <Route path="/euler-swap/:account" element={<EulerSwapShowInstance />} />
         </Routes>

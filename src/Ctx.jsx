@@ -62,18 +62,18 @@ export class GlobalContext {
         return m[1];
     }
 
-    rawVaultName(addr) {
+    rawVaultName(addr, hideLabel) {
         let vs = this.vaultsStatic[addr];
         if (!vs) return `Unknown vault: ${addr.substr(0,8)}...`;
-        let label = this.labels[addr];
+        let label = hideLabel ? '' : ' ' + this.labels.vaults[addr];
 
-        return `${vs.symbol} ${label}`;
+        return `${vs.symbol}${label}`;
     }
 
     renderVaultName(addr) {
         let vs = this.vaultsStatic[addr];
         if (!vs) return `Unknown vault: ${addr.substr(0,8)}...`;
-        let label = this.labels[addr];
+        let label = this.labels.vaults[addr];
 
         let m = vs.symbol.match(/^e(.*)-(\d+)$/);
         let sym = m[1];

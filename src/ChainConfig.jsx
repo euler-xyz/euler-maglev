@@ -1,7 +1,7 @@
 import { createPublicClient, http } from "viem";
 import * as viemChains from "viem/chains";
 
-import eulerChainsInterfaces from '../abis/EulerChains.json';
+import eulerChainsInterfaces from '../abis/chains/EulerChains.json';
 
 let eulerChainsDevLand;
 
