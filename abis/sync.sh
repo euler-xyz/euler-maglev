@@ -4,7 +4,8 @@ set -e
 
 ## EulerChains (FIXME: dynamically load this)
 
-cp ../../euler-devland/libflat/euler-interfaces/EulerChains.json .
+mkdir -p ./chains/
+cp ../../euler-devland/libflat/euler-interfaces/EulerChains.json ./chains/
 
 ## ABIs
 
@@ -15,3 +16,8 @@ cp ../../euler-devland/out/IEulerSwapPeriphery.sol/*.json .
 cp ../../euler-devland/out/EulerSwapFactory.sol/*.json .
 
 cp ../../euler-devland/out/MaglevLens.sol/*.json .
+
+for file in *.json; do
+    jq '{"abi"}' < $file > $file.tmp;
+    mv $file.tmp $file
+done

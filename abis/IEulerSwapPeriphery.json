@@ -1,1 +1,192 @@
-{"abi":[{"type":"function","name":"getLimits","inputs":[{"name":"eulerSwap","type":"address","internalType":"address"},{"name":"tokenIn","type":"address","internalType":"address"},{"name":"tokenOut","type":"address","internalType":"address"}],"outputs":[{"name":"","type":"uint256","internalType":"uint256"},{"name":"","type":"uint256","internalType":"uint256"}],"stateMutability":"view"},{"type":"function","name":"quoteExactInput","inputs":[{"name":"eulerSwap","type":"address","internalType":"address"},{"name":"tokenIn","type":"address","internalType":"address"},{"name":"tokenOut","type":"address","internalType":"address"},{"name":"amountIn","type":"uint256","internalType":"uint256"}],"outputs":[{"name":"","type":"uint256","internalType":"uint256"}],"stateMutability":"view"},{"type":"function","name":"quoteExactOutput","inputs":[{"name":"eulerSwap","type":"address","internalType":"address"},{"name":"tokenIn","type":"address","internalType":"address"},{"name":"tokenOut","type":"address","internalType":"address"},{"name":"amountOut","type":"uint256","internalType":"uint256"}],"outputs":[{"name":"","type":"uint256","internalType":"uint256"}],"stateMutability":"view"},{"type":"function","name":"swapExactIn","inputs":[{"name":"eulerSwap","type":"address","internalType":"address"},{"name":"tokenIn","type":"address","internalType":"address"},{"name":"tokenOut","type":"address","internalType":"address"},{"name":"amountIn","type":"uint256","internalType":"uint256"},{"name":"receiver","type":"address","internalType":"address"},{"name":"amountOutMin","type":"uint256","internalType":"uint256"},{"name":"deadline","type":"uint256","internalType":"uint256"}],"outputs":[],"stateMutability":"nonpayable"},{"type":"function","name":"swapExactOut","inputs":[{"name":"eulerSwap","type":"address","internalType":"address"},{"name":"tokenIn","type":"address","internalType":"address"},{"name":"tokenOut","type":"address","internalType":"address"},{"name":"amountOut","type":"uint256","internalType":"uint256"},{"name":"receiver","type":"address","internalType":"address"},{"name":"amountInMax","type":"uint256","internalType":"uint256"},{"name":"deadline","type":"uint256","internalType":"uint256"}],"outputs":[],"stateMutability":"nonpayable"}],"bytecode":{"object":"0x","sourceMap":"","linkReferences":{}},"deployedBytecode":{"object":"0x","sourceMap":"","linkReferences":{}},"methodIdentifiers":{"getLimits(address,address,address)":"664b8d7a","quoteExactInput(address,address,address,uint256)":"534eaf0f","quoteExactOutput(address,address,address,uint256)":"995d61aa","swapExactIn(address,address,address,uint256,address,uint256,uint256)":"65202c09","swapExactOut(address,address,address,uint256,address,uint256,uint256)":"5d10bc22"},"rawMetadata":"{\"compiler\":{\"version\":\"0.8.27+commit.40a35a09\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"eulerSwap\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"tokenIn\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"tokenOut\",\"type\":\"address\"}],\"name\":\"getLimits\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"eulerSwap\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"tokenIn\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"tokenOut\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amountIn\",\"type\":\"uint256\"}],\"name\":\"quoteExactInput\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"eulerSwap\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"tokenIn\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"tokenOut\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amountOut\",\"type\":\"uint256\"}],\"name\":\"quoteExactOutput\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"eulerSwap\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"tokenIn\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"tokenOut\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amountIn\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"receiver\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amountOutMin\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"deadline\",\"type\":\"uint256\"}],\"name\":\"swapExactIn\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"eulerSwap\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"tokenIn\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"tokenOut\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amountOut\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"receiver\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amountInMax\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"deadline\",\"type\":\"uint256\"}],\"name\":\"swapExactOut\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"getLimits(address,address,address)\":{\"notice\":\"Upper-bound on the max amount that can be sold of tokenIn and bought of tokenOut\"},\"quoteExactInput(address,address,address,uint256)\":{\"notice\":\"How much `tokenOut` can I get for `amountIn` of `tokenIn`?\"},\"quoteExactOutput(address,address,address,uint256)\":{\"notice\":\"How much `tokenIn` do I need to get `amountOut` of `tokenOut`?\"},\"swapExactIn(address,address,address,uint256,address,uint256,uint256)\":{\"notice\":\"Swap `amountIn` of `tokenIn` for `tokenOut`, with at least `amountOutMin` received. Output tokens are sent to `receiver`. The swap will fail after `deadline` (unless `deadline` is 0). IMPORTANT: `eulerSwap` must be a trusted contract, for example created by a trusted factory.\"},\"swapExactOut(address,address,address,uint256,address,uint256,uint256)\":{\"notice\":\"Swap `amountOut` of `tokenOut` for `tokenIn`, with at most `amountInMax` paid. Output tokens are sent to `receiver`. The swap will fail after `deadline` (unless `deadline` is 0). IMPORTANT: `eulerSwap` must be a trusted contract, for example created by a trusted factory.\"}},\"version\":1}},\"settings\":{\"compilationTarget\":{\"libflat/euler-swap/src/interfaces/IEulerSwapPeriphery.sol\":\"IEulerSwapPeriphery\"},\"evmVersion\":\"cancun\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[\":@uniswap/v4-core/=libflat/v4-core/\",\":@uniswap/v4-periphery/=libflat/v4-periphery/\",\":ethereum-vault-connector/=libflat/ethereum-vault-connector/src/\",\":euler-swap/=libflat/euler-swap/src/\",\":euler-vault-kit/=libflat/euler-vault-kit/src/\",\":evc/=libflat/ethereum-vault-connector/src/\",\":evk-test/=libflat/euler-vault-kit/test/\",\":evk/=libflat/euler-vault-kit/src/\",\":forge-std/=lib/forge-std/src/\",\":openzeppelin-contracts/=libflat/openzeppelin-contracts/contracts/\",\":permit2/=libflat/permit2/\",\":solmate/=libflat/solmate/\",\":v4-core/=libflat/v4-core/src/\",\":v4-periphery/=libflat/v4-periphery/\"]},\"sources\":{\"libflat/euler-swap/src/interfaces/IEulerSwapPeriphery.sol\":{\"keccak256\":\"0xedf3298ff075f1dca4c519d95a12f271d6b999b0d94e0adde154617acb6fe617\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://04af2525665114dc3c204df1af10121430f16bf6ec4ab517db28bccce7cc6afd\",\"dweb:/ipfs/QmYiDMqNeb51xHVg5jC1c1qHy2GLk7GQYdgEREzoSvaiTa\"]}},\"version\":1}","metadata":{"compiler":{"version":"0.8.27+commit.40a35a09"},"language":"Solidity","output":{"abi":[{"inputs":[{"internalType":"address","name":"eulerSwap","type":"address"},{"internalType":"address","name":"tokenIn","type":"address"},{"internalType":"address","name":"tokenOut","type":"address"}],"stateMutability":"view","type":"function","name":"getLimits","outputs":[{"internalType":"uint256","name":"","type":"uint256"},{"internalType":"uint256","name":"","type":"uint256"}]},{"inputs":[{"internalType":"address","name":"eulerSwap","type":"address"},{"internalType":"address","name":"tokenIn","type":"address"},{"internalType":"address","name":"tokenOut","type":"address"},{"internalType":"uint256","name":"amountIn","type":"uint256"}],"stateMutability":"view","type":"function","name":"quoteExactInput","outputs":[{"internalType":"uint256","name":"","type":"uint256"}]},{"inputs":[{"internalType":"address","name":"eulerSwap","type":"address"},{"internalType":"address","name":"tokenIn","type":"address"},{"internalType":"address","name":"tokenOut","type":"address"},{"internalType":"uint256","name":"amountOut","type":"uint256"}],"stateMutability":"view","type":"function","name":"quoteExactOutput","outputs":[{"internalType":"uint256","name":"","type":"uint256"}]},{"inputs":[{"internalType":"address","name":"eulerSwap","type":"address"},{"internalType":"address","name":"tokenIn","type":"address"},{"internalType":"address","name":"tokenOut","type":"address"},{"internalType":"uint256","name":"amountIn","type":"uint256"},{"internalType":"address","name":"receiver","type":"address"},{"internalType":"uint256","name":"amountOutMin","type":"uint256"},{"internalType":"uint256","name":"deadline","type":"uint256"}],"stateMutability":"nonpayable","type":"function","name":"swapExactIn"},{"inputs":[{"internalType":"address","name":"eulerSwap","type":"address"},{"internalType":"address","name":"tokenIn","type":"address"},{"internalType":"address","name":"tokenOut","type":"address"},{"internalType":"uint256","name":"amountOut","type":"uint256"},{"internalType":"address","name":"receiver","type":"address"},{"internalType":"uint256","name":"amountInMax","type":"uint256"},{"internalType":"uint256","name":"deadline","type":"uint256"}],"stateMutability":"nonpayable","type":"function","name":"swapExactOut"}],"devdoc":{"kind":"dev","methods":{},"version":1},"userdoc":{"kind":"user","methods":{"getLimits(address,address,address)":{"notice":"Upper-bound on the max amount that can be sold of tokenIn and bought of tokenOut"},"quoteExactInput(address,address,address,uint256)":{"notice":"How much `tokenOut` can I get for `amountIn` of `tokenIn`?"},"quoteExactOutput(address,address,address,uint256)":{"notice":"How much `tokenIn` do I need to get `amountOut` of `tokenOut`?"},"swapExactIn(address,address,address,uint256,address,uint256,uint256)":{"notice":"Swap `amountIn` of `tokenIn` for `tokenOut`, with at least `amountOutMin` received. Output tokens are sent to `receiver`. The swap will fail after `deadline` (unless `deadline` is 0). IMPORTANT: `eulerSwap` must be a trusted contract, for example created by a trusted factory."},"swapExactOut(address,address,address,uint256,address,uint256,uint256)":{"notice":"Swap `amountOut` of `tokenOut` for `tokenIn`, with at most `amountInMax` paid. Output tokens are sent to `receiver`. The swap will fail after `deadline` (unless `deadline` is 0). IMPORTANT: `eulerSwap` must be a trusted contract, for example created by a trusted factory."}},"version":1}},"settings":{"remappings":["@uniswap/v4-core/=libflat/v4-core/","@uniswap/v4-periphery/=libflat/v4-periphery/","ethereum-vault-connector/=libflat/ethereum-vault-connector/src/","euler-swap/=libflat/euler-swap/src/","euler-vault-kit/=libflat/euler-vault-kit/src/","evc/=libflat/ethereum-vault-connector/src/","evk-test/=libflat/euler-vault-kit/test/","evk/=libflat/euler-vault-kit/src/","forge-std/=lib/forge-std/src/","openzeppelin-contracts/=libflat/openzeppelin-contracts/contracts/","permit2/=libflat/permit2/","solmate/=libflat/solmate/","v4-core/=libflat/v4-core/src/","v4-periphery/=libflat/v4-periphery/"],"optimizer":{"enabled":true,"runs":200},"metadata":{"bytecodeHash":"ipfs"},"compilationTarget":{"libflat/euler-swap/src/interfaces/IEulerSwapPeriphery.sol":"IEulerSwapPeriphery"},"evmVersion":"cancun","libraries":{}},"sources":{"libflat/euler-swap/src/interfaces/IEulerSwapPeriphery.sol":{"keccak256":"0xedf3298ff075f1dca4c519d95a12f271d6b999b0d94e0adde154617acb6fe617","urls":["bzz-raw://04af2525665114dc3c204df1af10121430f16bf6ec4ab517db28bccce7cc6afd","dweb:/ipfs/QmYiDMqNeb51xHVg5jC1c1qHy2GLk7GQYdgEREzoSvaiTa"],"license":"MIT"}},"version":1},"id":38}
+{
+  "abi": [
+    {
+      "type": "function",
+      "name": "getLimits",
+      "inputs": [
+        {
+          "name": "eulerSwap",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "tokenIn",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "tokenOut",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "quoteExactInput",
+      "inputs": [
+        {
+          "name": "eulerSwap",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "tokenIn",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "tokenOut",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "amountIn",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "quoteExactOutput",
+      "inputs": [
+        {
+          "name": "eulerSwap",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "tokenIn",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "tokenOut",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "amountOut",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "swapExactIn",
+      "inputs": [
+        {
+          "name": "eulerSwap",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "tokenIn",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "tokenOut",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "amountIn",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "receiver",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "amountOutMin",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "deadline",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "swapExactOut",
+      "inputs": [
+        {
+          "name": "eulerSwap",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "tokenIn",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "tokenOut",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "amountOut",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "receiver",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "amountInMax",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "deadline",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    }
+  ]
+}
