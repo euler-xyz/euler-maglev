@@ -19,11 +19,9 @@ export function getChainConfigs() {
         // FIXME: no need to override this when it's in addresses
 
         if (chain.chainId === 1) {
-            // FIXME: these are addresses for ES 0.9
-
             chain.addresses.eulerSwapAddrs = {
-                eulerSwapFactory: '0xFb9FE66472917F0F8966506A3bf831Ac0c10caD4',
-                eulerSwapPeriphery: '0x52b26d9046BEc495914FaE467Ff0e95762C5ed74',
+                eulerSwapFactory: '0xb013be1D0D380C13B58e889f412895970A2Cf228',
+                eulerSwapPeriphery: '0x208fF5Eb543814789321DaA1B5Eb551881D16b06',
             };
 
             chain.addresses.maglevAddrs = {
