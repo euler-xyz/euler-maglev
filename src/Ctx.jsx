@@ -8,12 +8,13 @@ import * as Utils from './Utils';
 
 
 export class GlobalContext {
-    constructor(opts) {
-        if (!opts) opts = {};
-        this.numAccounts = opts.numAccounts || 1;
-        this.subAccount = opts.subAccount || 0;
+    constructor(args) {
+        this.args = args;
+
+        this.subAccount = this.args.currSubAccount;
+        this.numSubAccounts = this.numSubAccounts;
         let wagmiAccount = useAccount();
-        this.myPrimaryAddr = opts.addr || wagmiAccount?.address;
+        this.myPrimaryAddr = args.addr || wagmiAccount?.address;
 
         this.myAddr = this.myPrimaryAddr && Utils.getSubAccountAddress(this.myPrimaryAddr, this.subAccount);
         this.connected = !!this.myPrimaryAddr;
@@ -26,28 +27,54 @@ export class GlobalContext {
 
         let { data: currChain } = Lens.useEulerChain();
         let { data: labels } = Lens.useLabels();
-        let { data: vaultsStatic } = Lens.useVaultsStaticInfo();
-        let { data: vaultsGlobal } = Lens.useVaultsGlobal();
         let { data: prices } = Lens.usePrices();
 
-        let { data: vaultsPersonal } = Lens.useVaultsPersonalInfo(this.myPrimaryAddr, (1n << BigInt(this.numAccounts)) - 1n);
+        let vaultAddrsLabels = labels ? Object.keys(labels) : undefined;
+        let vaultAddrsExtra = Object.keys(this.args.extraVaultAddrs);
+        let mySubaccountMask = (1n << BigInt(this.args.numSubAccounts)) - 1n;
+
+        let { data: vaultsStaticLabels } = Lens.useVaultsStaticInfo(vaultAddrsLabels);
+        let { data: vaultsStaticExtra } = Lens.useVaultsStaticInfo(vaultAddrsExtra);
+        if (vaultsStaticLabels && vaultsStaticExtra) this.vaultsStatic = { ...vaultsStaticLabels, ... vaultsStaticExtra, };
+
+        let { data: vaultsGlobalLabels } = Lens.useVaultsGlobal(vaultAddrsLabels);
+        let { data: vaultsGlobalExtra } = Lens.useVaultsGlobal(vaultAddrsExtra);
+        if (vaultsGlobalLabels && vaultsGlobalExtra) this.vaultsGlobal = { ...vaultsGlobalLabels, ...vaultsGlobalExtra, };
+
+        let { data: vaultsPersonalLabels } = Lens.useVaultsPersonalInfo(this.myPrimaryAddr, mySubaccountMask, vaultAddrsLabels);
+        let { data: vaultsPersonalExtra } = Lens.useVaultsPersonalInfo(this.myPrimaryAddr, mySubaccountMask, vaultAddrsExtra);
+        if (vaultsPersonalLabels && vaultsPersonalExtra) this.vaultsPersonal = { ...vaultsPersonalLabels, ...vaultsPersonalExtra, };
 
         this.currChain = currChain;
         this.labels = labels;
-        this.vaultsStatic = vaultsStatic;
-        this.vaultsGlobal = vaultsGlobal;
         this.prices = prices;
-        this.vaultsPersonal = vaultsPersonal;
+
         this.chainConfigs = {};
 
-        //console.log(!!this.labels, !!this.vaultsStatic, !!this.vaultsGlobal, !!this.prices, !!this.vaultsPersonal);
-        this.ready = this.labels && this.vaultsStatic && this.vaultsGlobal && this.prices && (!this.connected || this.vaultsPersonal);
+        //console.log(!!this.labels, !!this.prices, !!this.vaultsStatic, !!this.vaultsGlobal, !!this.vaultsPersonal);
+        this.ready = this.labels && this.prices && this.vaultsStatic && this.vaultsGlobal && (!this.connected || this.vaultsPersonal);
 
         if (this.ready) {
             this._setupChainConfigs();
             this._collectAssets();
             if (this.connected) this._aggregateSubAccounts();
         }
+    }
+
+    addExtraVaults(vaultAddrs) {
+        let v = {};
+
+        for (let vaultAddr of Object.keys(vaultAddrs)) {
+            if (this.labels[vaultAddr] || this.args.extraVaultAddrs[vaultAddr]) continue;
+            v[vaultAddr] = true;
+        }
+
+        if (Object.keys(v).length) {
+            setTimeout(() => this.args.setExtraVaultAddrs({ ...this.args.extraVaultAddrs, ...v, }), 0);
+            return false;
+        }
+
+        return true;
     }
 
     renderVaultAsset(addr) {
@@ -73,7 +100,7 @@ export class GlobalContext {
     renderVaultName(addr) {
         let vs = this.vaultsStatic[addr];
         if (!vs) return `Unknown vault: ${addr.substr(0,8)}...`;
-        let label = this.labels[addr];
+        let label = this.labels[addr] || <span style={{ color: 'red', }}>UNKNOWN</span>;
 
         let m = vs.symbol.match(/^e(.*)-(\d+)$/);
         let sym = m[1];
@@ -96,7 +123,9 @@ export class GlobalContext {
     }
 
     vaultAssetPrice(vaultAddr) {
-        let price = this.prices[this.vaultsStatic[vaultAddr].asset];
+        let asset = this.vaultsStatic[vaultAddr]?.asset;
+        if (!asset) return NaN;
+        let price = this.prices[asset];
         if (!price) return NaN;
         return price.price;
     }
@@ -223,7 +252,7 @@ export class GlobalContext {
     _aggregateSubAccounts() {
         let o = [];
 
-        for (let i = 0; i < this.numAccounts; i++) {
+        for (let i = 0; i < this.args.numSubAccounts; i++) {
             let vaults = this.vaultsPersonal[i];
             let agg = {
                 subAccount: i,

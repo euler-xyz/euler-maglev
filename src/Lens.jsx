@@ -105,17 +105,16 @@ function decodeVaultStaticInfo(r, vault) {
     };
 }
 
-export function useVaultsStaticInfo() {
+export function useVaultsStaticInfo(vaultAddrs) {
     let { data: currChain, isPending: pending1 } = useEulerChain();
-    let { data: labels, isPending: pending2, } = useLabels();
     let client = usePublicClient();
 
     return useQuery({
-        queryKey: ['maglev-vaults-static', currChain?.chainId],
+        queryKey: ['maglev-vaults-static', currChain?.chainId, vaultAddrs],
         staleTime: Infinity,
-        enabled: !pending1 && !pending2,
+        enabled: !pending1 && vaultAddrs !== undefined,
         queryFn: async () => {
-            let vaultAddrs = Object.keys(labels);
+            if (vaultAddrs.length === 0) return {};
 
             let raw = await client.readContract({
                 address: currChain.addresses.maglevAddrs.maglevLens,
@@ -155,18 +154,17 @@ function decodeVaultGlobal(r) {
     return o;
 }
 
-export function useVaultsGlobal() {
+export function useVaultsGlobal(vaultAddrs) {
     let { data: currChain, isPending: pending1 } = useEulerChain();
-    let { data: labels, isPending: pending2, } = useLabels();
     let client = usePublicClient();
 
     return useQuery({
-        queryKey: ['maglev-vaults-global', currChain?.chainId],
+        queryKey: ['maglev-vaults-global', currChain?.chainId, vaultAddrs],
         staleTime: 60 * 1000,
-        enabled: !pending1 && !pending2,
+        enabled: !pending1 && vaultAddrs !== undefined,
         throwOnError: true,
         queryFn: async () => {
-            let vaultAddrs = Object.keys(labels);
+            if (vaultAddrs.length === 0) return {};
 
             let raw = await client.readContract({
                 address: currChain.addresses.maglevAddrs.maglevLens,
@@ -235,17 +233,16 @@ function decodeVaultsPersonalInfo(me, subAccountBitmask, vaultAddrs, raw) {
     return output;
 }
 
-export function useVaultsPersonalInfo(me, subAccountBitmask) {
+export function useVaultsPersonalInfo(me, subAccountBitmask, vaultAddrs) {
     let { data: currChain, isPending: pending1 } = useEulerChain();
-    let { data: labels, isPending: pending2, } = useLabels();
     let client = usePublicClient();
 
     return useQuery({
-        queryKey: ['maglev-vaults-personal', currChain?.chainId, me, subAccountBitmask.toString()],
+        queryKey: ['maglev-vaults-personal', currChain?.chainId, me, subAccountBitmask.toString(), vaultAddrs],
         staleTime: 60 * 1000,
-        enabled: !!me && !pending1 && !pending2,
+        enabled: !!me && !pending1 && vaultAddrs !== undefined,
         queryFn: async () => {
-            let vaultAddrs = Object.keys(labels);
+            if (vaultAddrs.length === 0) return {};
 
             let raw = await client.readContract({
                 address: currChain.addresses.maglevAddrs.maglevLens,

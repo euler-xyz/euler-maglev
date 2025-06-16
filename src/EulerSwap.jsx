@@ -20,7 +20,6 @@ import { OverlayPanel } from 'primereact/overlaypanel';
 import { Dialog } from 'primereact/dialog';
 import { InputSwitch } from 'primereact/inputswitch';
 
-import { useGlobalContext } from "./Ctx";
 import * as Lens from "./Lens";
 import * as EulerSwapUtils from "./EulerSwapUtils";
 
@@ -666,7 +665,7 @@ export function EulerSwapPanel(props) {
 
 
 export function EulerSwapBrowse(props) {
-    let ctx = useGlobalContext();
+    let ctx = props.ctx;
 
     let [assetA, setAssetA] = useState();
     let [assetB, setAssetB] = useState();
@@ -721,8 +720,13 @@ export function EulerSwapBrowse(props) {
         await EulerSwapUtils.doApprove(ctx, assetAInfo?.addr, ctx.currChain?.addresses.eulerSwapAddrs.eulerSwapPeriphery, approveAmount);
     };
 
+    let seenVaults = {};
+
     for (let i = 0; i < eulerSwapData.length; i++) {
         let e = eulerSwapData[i];
+
+        seenVaults[e.params.vault0] = true;
+        seenVaults[e.params.vault1] = true;
 
         if (assetAInfo && e.asset0 !== assetAInfo.addr && e.asset1 !== assetAInfo.addr) continue;
         if (assetBInfo && e.asset0 !== assetBInfo.addr && e.asset1 !== assetBInfo.addr) continue;
@@ -758,6 +762,8 @@ export function EulerSwapBrowse(props) {
 
         rows.push(row);
     }
+
+    if (!ctx.addExtraVaults(seenVaults)) return 'Loading...';
 
     let bigintSign = n => n < 0n ? -1 : n > 0n ? 1 : 0;
     if (exactIn) rows.sort((a,b) => bigintSign(b.q - a.q));
@@ -831,8 +837,8 @@ export function EulerSwapBrowse(props) {
 
 
 export function EulerSwapShowInstance(props) {
+    let ctx = props.ctx;
     let params = useParams();
-    let ctx = useGlobalContext({ addr: params.account, });
     let { data: myEulerSwap } = Lens.useMyEulerSwap(params.account);
 
     if (!ctx.ready) return "Loading...";
