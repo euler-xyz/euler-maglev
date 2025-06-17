@@ -6,22 +6,19 @@ import { TabMenu } from 'primereact/tabmenu';
 import { Chip } from 'primereact/chip';
 import { Card } from 'primereact/card';
 
-import { useGlobalContext } from "./Ctx";
 import { EulerSwapPanel } from "./EulerSwap";
 
 
 
-export function AccountPanel() {
-    let [activeTab, setActiveTab] = useState(0);
-    let [numAccounts, setNumAccounts] = useState(3);
-    let ctx = useGlobalContext({ numAccounts, subAccount: activeTab, });
+export function AccountPanel(props) {
+    let ctx = props.ctx;
 
     if (!ctx.ready) return "Loading...";
     if (!ctx.connected) return "Please connect your wallet.";
 
     let tabs = [];
 
-    for (let i = 0; i < numAccounts; i++) {
+    for (let i = 0; i < ctx.numSubAccounts; i++) {
         let sa = ctx.subAccounts[i];
         let leverage = sa.assets ? Number(sa.assets*100n/sa.nav)/100 : 1;
         tabs.push({
@@ -36,12 +33,12 @@ export function AccountPanel() {
     tabs.push({
         label: `+ New`,
         command: () => {
-            setNumAccounts(numAccounts + 1);
+            ctx.setNumSubAccounts(ctx.numSubAccounts + 1);
         },
     });
 
     return <div>
-        <TabMenu model={tabs} activeIndex={activeTab} onTabChange={(e) => setActiveTab(e.index)} />
+        <TabMenu model={tabs} activeIndex={ctx.subAccount} onTabChange={(e) => ctx.setCurrSubAccount(e.index)} />
         <SubAccountView ctx={ctx} />
     </div>
 }

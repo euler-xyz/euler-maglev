@@ -6,13 +6,12 @@ import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { InputSwitch } from 'primereact/inputswitch';
 
-import { useGlobalContext } from "./Ctx";
 import * as Lens from "./Lens";
 
 
 
-export function ProductsList() {
-    let ctx = useGlobalContext();
+export function ProductsList(props) {
+    let ctx = props.ctx;
 
     if (!ctx.ready) return "Loading...";
 
@@ -49,9 +48,9 @@ export function ProductsList() {
 }
 
 
-export function ProductInfo() {
+export function ProductInfo(props) {
+    let ctx = props.ctx;
     let params = useParams();
-    let ctx = useGlobalContext();
     let vaults = ctx.labels?.raw[params.product].vaults;
     let [liquidationLtv, setLiquidationLtv] = useState(false);
     let { data: borrowMatrix, isPending: pending1 } = Lens.useLTVMatrix(vaults, liquidationLtv);

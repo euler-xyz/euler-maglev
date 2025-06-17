@@ -8,17 +8,16 @@ import { Card } from 'primereact/card';
 import { InputText } from 'primereact/inputtext';
 import { Paginator } from 'primereact/paginator';
 
-import { useGlobalContext } from "./Ctx";
 import * as EulerSwapUtils from "./EulerSwapUtils";
 
 
 
-export function VaultList() {
+export function VaultList(props) {
     let [first, setFirst] = useState(0);
     let [numRows, setNumRows] = useState(10);
     let [search, setSearch] = useState('');
 
-    let ctx = useGlobalContext();
+    let ctx = props.ctx;
 
     if (!ctx.ready) return "Loading...";
 

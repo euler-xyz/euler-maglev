@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import { getDefaultConfig, RainbowKitProvider, darkTheme } from '@rainbow-me/rainbowkit';
 import { WagmiProvider } from 'wagmi';
 import { foundry, } from 'wagmi/chains';
@@ -5,6 +7,7 @@ import { QueryClientProvider, QueryClient, } from "@tanstack/react-query";
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { Route, Routes, Link, NavLink } from "react-router-dom";
 
+import { useGlobalContext } from "./Ctx";
 import { getWagmiChainConfigs } from './ChainConfig';
 import { VaultList } from './VaultList';
 import { ProductsList, ProductInfo } from './Products';
@@ -36,6 +39,16 @@ function Header() {
 }
 
 function Main() {
+    let [currSubAccount, setCurrSubAccount] = useState(0);
+    let [numSubAccounts, setNumSubAccounts] = useState(3);
+    let [extraVaultAddrs, setExtraVaultAddrs] = useState({});
+
+    let ctx = useGlobalContext({
+        currSubAccount, setCurrSubAccount,
+        numSubAccounts, setNumSubAccounts,
+        extraVaultAddrs, setExtraVaultAddrs,
+    });
+
     return <div className="main">
         <Header />
 
@@ -47,15 +60,14 @@ function Main() {
         </div>
 
         <Routes>
-            <Route path="/" element={<VaultList />} />
+            <Route path="/" element={<VaultList ctx={ctx} />} />
 
-            <Route path="/products/" element={<ProductsList />} />
-            <Route path="/products/:product" element={<ProductInfo />} />
+            <Route path="/products/" element={<ProductsList ctx={ctx} />} />
+            <Route path="/products/:product" element={<ProductInfo ctx={ctx} />} />
 
-            <Route path="/account/" element={<AccountPanel />} />
-
-            <Route path="/euler-swap/" element={<EulerSwapBrowse />} />
-            <Route path="/euler-swap/:account" element={<EulerSwapShowInstance />} />
+            <Route path="/account/" element={<AccountPanel ctx={ctx} />} />
+            <Route path="/euler-swap/" element={<EulerSwapBrowse ctx={ctx} />} />
+            <Route path="/euler-swap/:account" element={<EulerSwapShowInstance ctx={ctx} />} />
         </Routes>
     </div>
 }
