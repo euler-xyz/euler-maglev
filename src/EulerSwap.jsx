@@ -223,8 +223,8 @@ export function EulerSwapViz(props) {
 
     let halfWidth = width/2;
 
-    let v0status = ctx.vaultStatus(props.vault0);
-    let v1status = ctx.vaultStatus(props.vault1);
+    let v0status = ctx.vaultStatus(props.vault0, props.vaultsPersonal);
+    let v1status = ctx.vaultStatus(props.vault1, props.vaultsPersonal);
 
     let nav = v0status.value + v1status.value - v0status.debtValue - v1status.debtValue;
     let navNum = ctx.valueToNum(nav);
@@ -841,8 +841,12 @@ export function EulerSwapShowInstance(props) {
     let params = useParams();
     let { data: myEulerSwap } = Lens.useMyEulerSwap(params.account);
 
+    let { data: vaultsPersonal } = Lens.useVaultsPersonalInfo(myEulerSwap?.params.eulerAccount, 1n, myEulerSwap ? [myEulerSwap.params.vault0, myEulerSwap.params.vault1] : undefined);
+
     if (!ctx.ready) return "Loading...";
     let existing = myEulerSwap && myEulerSwap.addr !== zeroAddress ? myEulerSwap.addr : undefined;
+    if (existing && !vaultsPersonal) return "Loading...";
+    if (existing && !ctx.addExtraVaults(vaultsPersonal[0])) return 'Loading...';
 
     return <div>
         <div className="text-xl">
@@ -854,7 +858,7 @@ export function EulerSwapShowInstance(props) {
         {existing && <div style={{ width: '100%', }}>
             <div className="text-xl mt-2">Operator: <code>{myEulerSwap.addr}</code> - {ctx.etherscanAddress(myEulerSwap.addr, 'etherscan')}</div>
 
-            <EulerSwapViz ctx={ctx} viewMode vault0={myEulerSwap.params.vault0} vault1={myEulerSwap.params.vault1} initialParams={myEulerSwap.params} currReserves={{ reserve0: myEulerSwap.reserve0, reserve1: myEulerSwap.reserve1, }} />
+            <EulerSwapViz ctx={ctx} viewMode vault0={myEulerSwap.params.vault0} vault1={myEulerSwap.params.vault1} initialParams={myEulerSwap.params} vaultsPersonal={vaultsPersonal[0]} currReserves={{ reserve0: myEulerSwap.reserve0, reserve1: myEulerSwap.reserve1, }} />
         </div>}
     </div>
 }

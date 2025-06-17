@@ -200,11 +200,13 @@ export class GlobalContext {
         return this.subAccounts[this.subAccount];
     }
 
-    vaultStatus(vaultAddr) {
-        let shares = this.vaultsPersonal[this.subAccount][vaultAddr].balance;
+    vaultStatus(vaultAddr, vaultsPersonal) {
+        if (!vaultsPersonal) vaultsPersonal = this.vaultsPersonal[this.subAccount];
+
+        let shares = vaultsPersonal[vaultAddr].balance;
         let assets = this.sharesToAssets(vaultAddr, shares);
         let value = this.amountToValue(vaultAddr, assets);
-        let debt = this.vaultsPersonal[this.subAccount][vaultAddr].debt;
+        let debt = vaultsPersonal[vaultAddr].debt;
         let debtValue = this.amountToValue(vaultAddr, debt);
 
         return {
