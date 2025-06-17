@@ -12,7 +12,7 @@ export class GlobalContext {
         this.args = args;
 
         this.subAccount = this.args.currSubAccount;
-        this.numSubAccounts = this.numSubAccounts;
+        this.numSubAccounts = this.args.numSubAccounts;
         let wagmiAccount = useAccount();
         this.myPrimaryAddr = args.addr || wagmiAccount?.address;
 
