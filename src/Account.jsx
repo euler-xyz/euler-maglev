@@ -38,7 +38,7 @@ export function AccountPanel(props) {
     });
 
     return <div>
-        <TabMenu model={tabs} activeIndex={ctx.subAccount} onTabChange={(e) => ctx.setCurrSubAccount(e.index)} />
+        <TabMenu model={tabs} activeIndex={ctx.subAccount} onTabChange={(e) => ctx.args.setCurrSubAccount(e.index)} />
         <SubAccountView ctx={ctx} />
     </div>
 }
