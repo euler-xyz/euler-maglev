@@ -765,6 +765,10 @@ export function EulerSwapBrowse(props) {
 
     if (!ctx.addExtraVaults(seenVaults)) return 'Loading...';
 
+    if (eulerSwapQuotes) {
+        rows = rows.filter(row => typeof(row.q) === 'bigint');
+    }
+
     let bigintSign = n => n < 0n ? -1 : n > 0n ? 1 : 0;
     if (exactIn) rows.sort((a,b) => bigintSign(b.q - a.q));
     else rows.sort((a,b) => bigintSign(a.q - b.q));
