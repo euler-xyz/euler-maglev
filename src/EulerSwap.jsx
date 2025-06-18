@@ -205,7 +205,6 @@ export function EulerSwapViz(props) {
     let ctx = props.ctx;
 
     let { observe, width } = useDimensions();
-    let { data: ltvPair } = Lens.useLTVPair(props.vault0, props.vault1);
     let [domain, setDomain] = useState();
     let [params, setParams] = useState();
 
@@ -219,14 +218,30 @@ export function EulerSwapViz(props) {
     let curveInfoOverlay = useRef(null);
     let [curveInfo, setCurveInfo] = useState();
 
-    if (!ltvPair) return "Loading...";
+    let { data: ltvPair } = Lens.useLTVPair(props.vault0, props.vault1);
+    let { data: enteredMarkets } = Lens.useMyEnteredMarkets(props.account);
+
+    let seenVaults = {};
+    if (enteredMarkets) {
+        for (let v of enteredMarkets.collaterals) seenVaults[v] = true;
+        for (let v of enteredMarkets.controllers) seenVaults[v] = true;
+        seenVaults[props.vault0] = true;
+        seenVaults[props.vault1] = true;
+    }
+    let allVaults = Object.keys(seenVaults);
+
+    let { data: vaultsPersonal } = Lens.useVaultsPersonalInfo(props.account, allVaults);
+    let { data: ltvMatrix } = Lens.useLTVMatrix(allVaults, false);
+
+    if (!ctx.ready || !ltvPair || !enteredMarkets || !vaultsPersonal || !ltvMatrix) return 'Loading...';
+    if (!ctx.addExtraVaults(seenVaults)) return 'Loading...';
 
     let halfWidth = width/2;
 
-    let v0status = ctx.vaultStatus(props.vault0, props.vaultsPersonal);
-    let v1status = ctx.vaultStatus(props.vault1, props.vaultsPersonal);
+    let v0status = ctx.vaultStatus(props.vault0, vaultsPersonal);
+    let v1status = ctx.vaultStatus(props.vault1, vaultsPersonal);
 
-    let nav = v0status.value + v1status.value - v0status.debtValue - v1status.debtValue;
+    let nav = v0status.value + v1status.value - v0status.debtValue - v1status.debtValue + 6905872650000000000000n; //FIXME
     let navNum = ctx.valueToNum(nav);
 
     let maxDomain = 1.05 * navNum / (1 - Math.max(ltvPair[0], ltvPair[1]));
@@ -324,7 +339,7 @@ export function EulerSwapViz(props) {
     let paramsRaw = {
         vault0: props.vault0,
         vault1: props.vault1,
-        eulerAccount: ctx.myAddr,
+        eulerAccount: props.account,
 
         equilibriumReserve0: ctx.valueToAmount(props.vault0, params.curveRight - params.curveMid),
         equilibriumReserve1: ctx.valueToAmount(props.vault1, params.curveMid - params.curveLeft),
@@ -644,13 +659,13 @@ export function EulerSwapPanel(props) {
         </div>
 
         {uiState === 'default' && existing && <div style={{ width: '100%', }}>
-            <EulerSwapViz ctx={props.ctx} viewMode vault0={myEulerSwap.params.vault0} vault1={myEulerSwap.params.vault1} initialParams={myEulerSwap.params} currReserves={currReserves} />
+            <EulerSwapViz viewMode ctx={ctx} account={myEulerSwap.params.eulerAccount} vault0={myEulerSwap.params.vault0} vault1={myEulerSwap.params.vault1} initialParams={myEulerSwap.params} currReserves={currReserves} />
         </div>}
 
         {uiState === 'new-choose-vaults' && <VaultPairChooser ctx={ctx} onChoose={onChooseVaults} />}
 
         {uiState === 'edit' && <div style={{ width: '100%', }}>
-            <EulerSwapViz ctx={props.ctx} vault0={vaults[0]} vault1={vaults[1]} initialParams={existing && myEulerSwap.params} currReserves={existing && currReserves} onInstall={onInstall} />
+            <EulerSwapViz ctx={ctx} account={ctx.myAddr} vault0={vaults[0]} vault1={vaults[1]} initialParams={existing && myEulerSwap.params} currReserves={existing && currReserves} onInstall={onInstall} />
         </div>}
     </Panel>
 }
@@ -843,14 +858,10 @@ export function EulerSwapBrowse(props) {
 export function EulerSwapShowInstance(props) {
     let ctx = props.ctx;
     let params = useParams();
-    let { data: myEulerSwap } = Lens.useMyEulerSwap(params.account);
+    let { data: myEulerSwap, isPending: pending1 } = Lens.useMyEulerSwap(params.account);
 
-    let { data: vaultsPersonal } = Lens.useVaultsPersonalInfo(myEulerSwap?.params.eulerAccount, 1n, myEulerSwap ? [myEulerSwap.params.vault0, myEulerSwap.params.vault1] : undefined);
-
-    if (!ctx.ready) return "Loading...";
+    if (!ctx.ready || pending1) return "Loading...";
     let existing = myEulerSwap && myEulerSwap.addr !== zeroAddress ? myEulerSwap.addr : undefined;
-    if (existing && !vaultsPersonal) return "Loading...";
-    if (existing && !ctx.addExtraVaults(vaultsPersonal[0])) return 'Loading...';
 
     return <div>
         <div className="text-xl">
@@ -862,7 +873,7 @@ export function EulerSwapShowInstance(props) {
         {existing && <div style={{ width: '100%', }}>
             <div className="text-xl mt-2">Operator: <code>{myEulerSwap.addr}</code> - {ctx.etherscanAddress(myEulerSwap.addr, 'etherscan')}</div>
 
-            <EulerSwapViz ctx={ctx} viewMode vault0={myEulerSwap.params.vault0} vault1={myEulerSwap.params.vault1} initialParams={myEulerSwap.params} vaultsPersonal={vaultsPersonal[0]} currReserves={{ reserve0: myEulerSwap.reserve0, reserve1: myEulerSwap.reserve1, }} />
+            <EulerSwapViz viewMode ctx={ctx} account={myEulerSwap.params.eulerAccount} vault0={myEulerSwap.params.vault0} vault1={myEulerSwap.params.vault1} initialParams={myEulerSwap.params} currReserves={{ reserve0: myEulerSwap.reserve0, reserve1: myEulerSwap.reserve1, }} />
         </div>}
     </div>
 }

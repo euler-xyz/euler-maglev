@@ -41,8 +41,8 @@ export class GlobalContext {
         let { data: vaultsGlobalExtra } = Lens.useVaultsGlobal(vaultAddrsExtra);
         if (vaultsGlobalLabels && vaultsGlobalExtra) this.vaultsGlobal = { ...vaultsGlobalLabels, ...vaultsGlobalExtra, };
 
-        let { data: vaultsPersonalLabels } = Lens.useVaultsPersonalInfo(this.myPrimaryAddr, mySubaccountMask, vaultAddrsLabels);
-        let { data: vaultsPersonalExtra } = Lens.useVaultsPersonalInfo(this.myPrimaryAddr, mySubaccountMask, vaultAddrsExtra);
+        let { data: vaultsPersonalLabels } = Lens.useVaultsPersonalInfoMulti(this.myPrimaryAddr, mySubaccountMask, vaultAddrsLabels);
+        let { data: vaultsPersonalExtra } = Lens.useVaultsPersonalInfoMulti(this.myPrimaryAddr, mySubaccountMask, vaultAddrsExtra);
         if (vaultsPersonalLabels && vaultsPersonalExtra) {
             this.vaultsPersonal = {};
             for (let k of Object.keys(vaultsPersonalLabels)) {
@@ -70,12 +70,12 @@ export class GlobalContext {
         let v = {};
 
         for (let vaultAddr of Object.keys(vaultAddrs)) {
-            if (this.labels[vaultAddr] || this.args.extraVaultAddrs[vaultAddr]) continue;
+            if (this.labels.vaults[vaultAddr] || this.args.extraVaultAddrs.vaults[vaultAddr]) continue;
             v[vaultAddr] = true;
         }
 
         if (Object.keys(v).length) {
-            setTimeout(() => this.args.setExtraVaultAddrs({ ...this.args.extraVaultAddrs, ...v, }), 0);
+            setTimeout(() => this.args.setExtraVaultAddrs({ ...this.args.extraVaultAddrs.vaults, ...v, }), 0);
             return false;
         }
 

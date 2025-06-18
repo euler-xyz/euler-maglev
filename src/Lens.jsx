@@ -256,12 +256,35 @@ function decodeVaultsPersonalInfo(me, subAccountBitmask, vaultAddrs, raw) {
     return output;
 }
 
-export function useVaultsPersonalInfo(me, subAccountBitmask, vaultAddrs) {
+export function useVaultsPersonalInfo(me, vaultAddrs) {
     let { data: currChain, isPending: pending1 } = useEulerChain();
     let client = usePublicClient();
 
     return useQuery({
-        queryKey: ['maglev-vaults-personal', currChain?.chainId, me, subAccountBitmask.toString(), vaultAddrs],
+        queryKey: ['maglev-vaults-personal', currChain?.chainId, me, vaultAddrs],
+        staleTime: 60 * 1000,
+        enabled: !!me && !pending1 && vaultAddrs !== undefined,
+        queryFn: async () => {
+            if (vaultAddrs.length === 0) return {};
+
+            let raw = await client.readContract({
+                address: currChain.addresses.maglevAddrs.maglevLens,
+                abi: maglevLensAbi.abi,
+                functionName: 'vaultsPersonalState',
+                args: [currChain.addresses.coreAddrs.evc, me, 1n, vaultAddrs],
+            });
+
+            return decodeVaultsPersonalInfo(me, 1n, vaultAddrs, raw)[0];
+        },
+    });
+}
+
+export function useVaultsPersonalInfoMulti(me, subAccountBitmask, vaultAddrs) {
+    let { data: currChain, isPending: pending1 } = useEulerChain();
+    let client = usePublicClient();
+
+    return useQuery({
+        queryKey: ['maglev-vaults-personal-multi', currChain?.chainId, me, subAccountBitmask.toString(), vaultAddrs],
         staleTime: 60 * 1000,
         enabled: !!me && !pending1 && vaultAddrs !== undefined,
         queryFn: async () => {
@@ -279,6 +302,27 @@ export function useVaultsPersonalInfo(me, subAccountBitmask, vaultAddrs) {
     });
 }
 
+export function useMyEnteredMarkets(me) {
+    let { data: currChain, isPending: pending1 } = useEulerChain();
+    let client = usePublicClient();
+
+    return useQuery({
+        queryKey: ['maglev-myEnteredMarkets', me],
+        staleTime: 60 * 1000,
+        enabled: !pending1,
+        throwOnError: true,
+        queryFn: async () => {
+            let raw = await client.readContract({
+                address: currChain.addresses.maglevAddrs.maglevLens,
+                abi: maglevLensAbi.abi,
+                functionName: 'myEnteredMarkets',
+                args: [currChain.addresses.coreAddrs.evc, me],
+            });
+
+            return { collaterals: raw[0], controllers: raw[1], };
+        },
+    });
+}
 
 
 

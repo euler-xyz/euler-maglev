@@ -398,6 +398,35 @@
     },
     {
       "type": "function",
+      "name": "myEnteredMarkets",
+      "inputs": [
+        {
+          "name": "evc",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "me",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "collaterals",
+          "type": "address[]",
+          "internalType": "address[]"
+        },
+        {
+          "name": "controllers",
+          "type": "address[]",
+          "internalType": "address[]"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
       "name": "vaultsGlobal",
       "inputs": [
         {
