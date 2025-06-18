@@ -43,7 +43,12 @@ export class GlobalContext {
 
         let { data: vaultsPersonalLabels } = Lens.useVaultsPersonalInfo(this.myPrimaryAddr, mySubaccountMask, vaultAddrsLabels);
         let { data: vaultsPersonalExtra } = Lens.useVaultsPersonalInfo(this.myPrimaryAddr, mySubaccountMask, vaultAddrsExtra);
-        if (vaultsPersonalLabels && vaultsPersonalExtra) this.vaultsPersonal = { ...vaultsPersonalLabels, ...vaultsPersonalExtra, };
+        if (vaultsPersonalLabels && vaultsPersonalExtra) {
+            this.vaultsPersonal = {};
+            for (let k of Object.keys(vaultsPersonalLabels)) {
+                this.vaultsPersonal[k] = { ...vaultsPersonalLabels[k], ...vaultsPersonalExtra[k], };
+            }
+        }
 
         this.currChain = currChain;
         this.labels = labels;
