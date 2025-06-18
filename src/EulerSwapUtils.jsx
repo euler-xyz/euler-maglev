@@ -197,7 +197,7 @@ export async function doApprove(ctx, token, spender, value) {
     await Utils.executeTxn(ctx, {
         account: ctx.myPrimaryAddr,
         address: token,
-        abi: parseAbi(['function approve(address spender, uint256 value) external returns (bool)']),
+        abi: parseAbi(['function approve(address spender, uint256 value) external']),
         functionName: 'approve',
         args: [spender, value],
     });
