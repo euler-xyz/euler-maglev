@@ -226,7 +226,11 @@ export function useLTVMatrix(vaults, liquidationLtv) {
                 args: [vaults, liquidationLtv],
             });
 
-            return raw.map(v => v / 1e4);
+            let output = raw.map(v => v / 1e4);
+            let outputMatrix = [];
+            while (output.length) outputMatrix.push(output.splice(0, vaults.length));
+
+            return outputMatrix;
         },
     });
 }

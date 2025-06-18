@@ -236,6 +236,15 @@ export function EulerSwapViz(props) {
     if (!ctx.ready || !ltvPair || !enteredMarkets || !vaultsPersonal || !ltvMatrix) return 'Loading...';
     if (!ctx.addExtraVaults(seenVaults)) return 'Loading...';
 
+
+    let vaultStatuses = allVaults.map(v => ctx.vaultStatus(v, vaultsPersonal));
+    console.log("AV",allVaults);
+    console.log("VS",vaultStatuses);
+    //for (let v of allVaults) {
+    //    if
+    //}
+
+
     let halfWidth = width/2;
 
     let v0status = ctx.vaultStatus(props.vault0, vaultsPersonal);

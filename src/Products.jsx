@@ -53,7 +53,7 @@ export function ProductInfo(props) {
     let params = useParams();
     let vaults = ctx.labels?.raw[params.product].vaults;
     let [liquidationLtv, setLiquidationLtv] = useState(false);
-    let { data: borrowMatrix, isPending: pending1 } = Lens.useLTVMatrix(vaults, liquidationLtv);
+    let { data: matrix, isPending: pending1 } = Lens.useLTVMatrix(vaults, liquidationLtv);
 
     if (!ctx.ready || pending1) return "Loading...";
 
@@ -71,7 +71,7 @@ export function ProductInfo(props) {
         let row = [<th className="row-header" key="header">{ctx.rawVaultName(vaults[i], true)}</th>];
 
         for (let j = 0; j < vaults.length; j++) {
-            row.push(<td className="cell" key={j}>{borrowMatrix[(i*vaults.length) + j]}</td>);
+            row.push(<td className="cell" key={j}>{matrix[i][j]}</td>);
         }
 
         rows.push(<tr className="data-row" key={i}>{row}</tr>);
