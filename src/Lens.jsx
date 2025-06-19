@@ -186,29 +186,6 @@ export function useVaultsGlobal(vaultAddrs) {
 
 
 
-export function useLTVPair(vault0, vault1) {
-    let { data: currChain, isPending: pending1 } = useEulerChain();
-    let client = usePublicClient();
-
-    return useQuery({
-        queryKey: ['maglev-ltv-pair', vault0, vault1],
-        staleTime: 60 * 1000,
-        enabled: !pending1,
-        throwOnError: true,
-        queryFn: async () => {
-            let raw = await client.readContract({
-                address: currChain.addresses.maglevAddrs.maglevLens,
-                abi: maglevLensAbi.abi,
-                functionName: 'getLTVPair',
-                args: [vault0, vault1],
-            });
-
-            return [raw[0] / 1e4, raw[1] / 1e4];
-        },
-    });
-}
-
-
 export function useLTVMatrix(vaults, liquidationLtv) {
     let { data: currChain, isPending: pending1 } = useEulerChain();
     let client = usePublicClient();
