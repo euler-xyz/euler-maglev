@@ -53,6 +53,7 @@ export function ProductInfo(props) {
     let params = useParams();
     let vaults = ctx.labels?.raw[params.product].vaults;
     let [liquidationLtv, setLiquidationLtv] = useState(false);
+    let [leverageMode, setLeverageMode] = useState(false);
     let { data: matrix, isPending: pending1 } = Lens.useLTVMatrix(vaults, liquidationLtv);
 
     if (!ctx.ready || pending1) return "Loading...";
@@ -71,7 +72,14 @@ export function ProductInfo(props) {
         let row = [<th className="row-header" key="header">{ctx.rawVaultName(vaults[i], true)}</th>];
 
         for (let j = 0; j < vaults.length; j++) {
-            row.push(<td className="cell" key={j}>{matrix[i][j]}</td>);
+            let data = matrix[i][j];
+            if (data === 0) {
+                data = '';
+            } else if (leverageMode) {
+                data = 1/(1 - data);
+                data = data.toFixed(2) + 'x';
+            }
+            row.push(<td className="cell" key={j}>{data}</td>);
         }
 
         rows.push(<tr className="data-row" key={i}>{row}</tr>);
@@ -86,8 +94,19 @@ export function ProductInfo(props) {
         </table>
 
         <div className="flex align-items-center mt-4">
-            <InputSwitch checked={liquidationLtv} onChange={(e) => setLiquidationLtv(e.value)} />
-            <span className="ml-3">{liquidationLtv ? 'Liquidation' : 'Borrow'} LTVs</span>
+            <div className="flex align-items-center">
+                <InputSwitch checked={liquidationLtv} onChange={(e) => setLiquidationLtv(e.value)} />
+                <span className="ml-3">{liquidationLtv ? 'Liquidation' : 'Borrow'} LTVs</span>
+            </div>
+
+            <div className="flex align-items-center ml-4">
+                <InputSwitch checked={leverageMode} onChange={(e) => setLeverageMode(e.value)} />
+                <span className="ml-3">{leverageMode ? 'Leverage' : 'LTV'}</span>
+            </div>
+        </div>
+
+        <div className="flex align-items-center mt-4">
+            * Columns are liability vaults, rows are collateral vaults
         </div>
     </div>
 }

@@ -271,7 +271,6 @@ export function EulerSwapViz(props) {
     let ltv0 = -(navNum + extracollateral0) / (1 - ltvPair[1]);
     let ltv1 = (navNum + extracollateral1) / (1 - ltvPair[0]);
 
-    //let maxDomain = 1.05 * navNum / (1 - Math.max(ltvPair[0], ltvPair[1]));
     let maxDomain = 1.05 * Math.max(Math.abs(ltv0), Math.abs(ltv1));
     if (domain === undefined) setDomain(props.initialDomain || maxDomain);
 
@@ -306,7 +305,7 @@ export function EulerSwapViz(props) {
             fee: 0.01,
             price: loadPrice(),
             curveLeft: ltv0,
-            curveMid: 0,
+            curveMid: navMidpoint,
             curveRight: ltv1,
         });
         return;
