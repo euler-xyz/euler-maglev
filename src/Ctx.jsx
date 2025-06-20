@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { useQueryClient } from '@tanstack/react-query';
 import { useConfig, useWalletClient, usePublicClient, useAccount } from 'wagmi';
 import { parseUnits, formatUnits } from "viem";
@@ -103,10 +104,16 @@ export class GlobalContext {
         return `${vs.symbol}${label}`;
     }
 
-    renderVaultName(addr) {
+    renderVaultName(addr, noLinks) {
         let vs = this.vaultsStatic[addr];
         if (!vs) return `Unknown vault: ${addr.substr(0,8)}...`;
-        let label = this.labels.vaults[addr] || <span style={{ color: 'red', }}>UNKNOWN</span>;
+        let label = this.labels.vaults[addr];
+
+        if (label) {
+            if (!noLinks) label = <Link to={`/products/${label}`}>{label}</Link>;
+        } else {
+            label = <span style={{ color: 'red', }}>UNKNOWN</span>;
+        }
 
         let m = vs.symbol.match(/^e(.*)-(\d+)$/);
         let sym = m[1];
@@ -114,7 +121,7 @@ export class GlobalContext {
 
         return <div className="vault-name">
             <div>
-                <span className="symbol">{sym}</span> <span>{id}</span>
+                <span className="symbol">{sym}-{id}</span>
             </div>
             <div className="product">
                 {label}

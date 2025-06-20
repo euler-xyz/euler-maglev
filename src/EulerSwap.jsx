@@ -40,7 +40,7 @@ function VaultChooser(props) {
     };
 
     let itemTemplate = (item) => {
-        return props.ctx.renderVaultName(item.vault);
+        return props.ctx.renderVaultName(item.vault, true);
     };
 
     let onChange = (e) => {

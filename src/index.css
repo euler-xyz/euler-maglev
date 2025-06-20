@@ -60,6 +60,14 @@
         font-size: 120%;
         margin-right: 10px;
     }
+
+    a:link {
+        text-decoration: none;
+    }
+
+    a {
+        color: inherit;
+    }
 }
 
 
