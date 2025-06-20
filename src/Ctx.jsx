@@ -2,6 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useConfig, useWalletClient, usePublicClient, useAccount } from 'wagmi';
 import { parseUnits, formatUnits } from "viem";
 import fromExponential from 'from-exponential';
+import { Tooltip } from 'primereact/tooltip';
 
 import * as Lens from "./Lens";
 import * as Utils from './Utils';
@@ -165,6 +166,29 @@ export class GlobalContext {
         return `${parseFloat(formatUnits(v, 18)) * 100}%`;
     }
 
+    renderNiceNum(n) {
+        let orig = n;
+        n = parseFloat(n);
+
+        let unit = '';
+        if (n > 1e9) {
+            n /= 1e9;
+            unit = 'B';
+        } else if (n > 1e6) {
+            n /= 1e6;
+            unit = 'M';
+        } else if (n > 1e3) {
+            n /= 1e3;
+            unit = 'K';
+        }
+
+        n = Number(n.toPrecision(5));
+
+        let str = n.toString() + unit;
+
+        return <span className="maglev-tooltip" data-pr-tooltip={orig} data-pr-position="bottom">{str}</span>;
+    }
+
     renderUnderlying(vaultAddr, amount) {
         let decimals = this.vaultDecimals(vaultAddr);
 
@@ -172,7 +196,7 @@ export class GlobalContext {
 
         return <div>
             <div>
-                {formatUnits(amount, decimals)}
+                {this.renderNiceNum(formatUnits(amount, decimals))}
             </div>
             <div>
                 {this.renderValue(value)}
@@ -181,7 +205,7 @@ export class GlobalContext {
     }
 
     renderValue(value) {
-        return typeof(value) === 'bigint' ? '$' + formatUnits(value, 18) : <span style={{ color: 'red', }}>?</span>;
+        return typeof(value) === 'bigint' ? <span>${this.renderNiceNum(formatUnits(value, 18))}</span> : <span style={{ color: 'red', }}>?</span>;
     }
 
     valueToNum(value) {

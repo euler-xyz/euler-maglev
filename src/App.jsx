@@ -13,6 +13,7 @@ import { VaultList } from './VaultList';
 import { ProductsList, ProductInfo } from './Products';
 import { AccountPanel } from './Account';
 import { EulerSwapBrowse, EulerSwapShowInstance } from './EulerSwap';
+import { Tooltip } from 'primereact/tooltip';
 
 
 const wagmiConfig = getDefaultConfig({
@@ -50,6 +51,8 @@ function Main() {
     });
 
     return <div className="main">
+        <Tooltip target=".maglev-tooltip" autoHide={false} appendTo="self" />
+
         <Header />
 
         <div className="header-links">
