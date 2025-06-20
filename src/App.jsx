@@ -6,6 +6,7 @@ import { foundry, } from 'wagmi/chains';
 import { QueryClientProvider, QueryClient, } from "@tanstack/react-query";
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { Route, Routes, Link, NavLink } from "react-router-dom";
+import { Tooltip as ReactTooltip } from 'react-tooltip';
 
 import { useGlobalContext } from "./Ctx";
 import { getWagmiChainConfigs } from './ChainConfig';
@@ -13,7 +14,6 @@ import { VaultList } from './VaultList';
 import { ProductsList, ProductInfo } from './Products';
 import { AccountPanel } from './Account';
 import { EulerSwapBrowse, EulerSwapShowInstance } from './EulerSwap';
-import { Tooltip } from 'primereact/tooltip';
 
 
 const wagmiConfig = getDefaultConfig({
@@ -51,8 +51,6 @@ function Main() {
     });
 
     return <div className="main">
-        <Tooltip target=".maglev-tooltip" autoHide={false} appendTo="self" />
-
         <Header />
 
         <div className="header-links">
@@ -72,6 +70,8 @@ function Main() {
             <Route path="/euler-swap/" element={<EulerSwapBrowse ctx={ctx} />} />
             <Route path="/euler-swap/:account" element={<EulerSwapShowInstance ctx={ctx} />} />
         </Routes>
+
+        <ReactTooltip id="maglev-tooltip" clickable style={{ backgroundColor: "#484646", color: "white", top: -50 }} />
     </div>
 }
 

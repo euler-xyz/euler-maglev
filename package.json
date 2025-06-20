@@ -19,6 +19,7 @@
     "react-dom": "^19.0.0",
     "react-draggable": "^4.4.6",
     "react-router-dom": "^7.6.0",
+    "react-tooltip": "^5.29.1",
     "viem": "^2.23.10",
     "wagmi": "^2.14.13"
   },

@@ -3,7 +3,6 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useConfig, useWalletClient, usePublicClient, useAccount } from 'wagmi';
 import { parseUnits, formatUnits } from "viem";
 import fromExponential from 'from-exponential';
-import { Tooltip } from 'primereact/tooltip';
 
 import * as Lens from "./Lens";
 import * as Utils from './Utils';
@@ -193,7 +192,7 @@ export class GlobalContext {
 
         let str = n.toString() + unit;
 
-        return <span className="maglev-tooltip" data-pr-tooltip={orig} data-pr-position="bottom">{str}</span>;
+        return <span data-tooltip-id="maglev-tooltip" data-tooltip-content={orig} data-tooltip-place="bottom">{str}</span>;
     }
 
     renderUnderlying(vaultAddr, amount) {
