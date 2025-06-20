@@ -231,35 +231,6 @@
     },
     {
       "type": "function",
-      "name": "getLTVPair",
-      "inputs": [
-        {
-          "name": "vault0",
-          "type": "address",
-          "internalType": "address"
-        },
-        {
-          "name": "vault1",
-          "type": "address",
-          "internalType": "address"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "",
-          "type": "uint16",
-          "internalType": "uint16"
-        },
-        {
-          "name": "",
-          "type": "uint16",
-          "internalType": "uint16"
-        }
-      ],
-      "stateMutability": "view"
-    },
-    {
-      "type": "function",
       "name": "getMyEulerSwap",
       "inputs": [
         {
@@ -421,6 +392,107 @@
           "name": "controllers",
           "type": "address[]",
           "internalType": "address[]"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "vaultsDetailed",
+      "inputs": [
+        {
+          "name": "vaults",
+          "type": "address[]",
+          "internalType": "address[]"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "type": "tuple[]",
+          "internalType": "struct MaglevLens.VaultDetailed[]",
+          "components": [
+            {
+              "name": "governorAdmin",
+              "type": "address",
+              "internalType": "address"
+            },
+            {
+              "name": "feeReceiver",
+              "type": "address",
+              "internalType": "address"
+            },
+            {
+              "name": "interestFee",
+              "type": "uint16",
+              "internalType": "uint16"
+            },
+            {
+              "name": "interestRateModel",
+              "type": "address",
+              "internalType": "address"
+            },
+            {
+              "name": "protocolFeeShare",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "protocolFeeReceiver",
+              "type": "address",
+              "internalType": "address"
+            },
+            {
+              "name": "maxLiquidationDiscount",
+              "type": "uint16",
+              "internalType": "uint16"
+            },
+            {
+              "name": "liquidationCoolOffTime",
+              "type": "uint16",
+              "internalType": "uint16"
+            },
+            {
+              "name": "hookTarget",
+              "type": "address",
+              "internalType": "address"
+            },
+            {
+              "name": "hookedOps",
+              "type": "uint32",
+              "internalType": "uint32"
+            },
+            {
+              "name": "configFlags",
+              "type": "uint32",
+              "internalType": "uint32"
+            },
+            {
+              "name": "unitOfAccount",
+              "type": "address",
+              "internalType": "address"
+            },
+            {
+              "name": "oracle",
+              "type": "address",
+              "internalType": "address"
+            },
+            {
+              "name": "dToken",
+              "type": "address",
+              "internalType": "address"
+            },
+            {
+              "name": "accumulatedFees",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "creator",
+              "type": "address",
+              "internalType": "address"
+            }
+          ]
         }
       ],
       "stateMutability": "view"

@@ -193,7 +193,7 @@ export class GlobalContext {
 
         n = Number(n.toPrecision(5));
 
-        let str = n.toString() + unit;
+        let str = fromExponential(n) + unit;
 
         return <span data-tooltip-id="maglev-tooltip" data-tooltip-content={orig} data-tooltip-place="bottom">{str}</span>;
     }

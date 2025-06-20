@@ -4,6 +4,9 @@ RELEASE
   * don't round-trip price, fee, concentration, through Number
     ? telosc guys: slider can't go below .3%
   * fix hardcoded gas limits (foundry problem?)
+  * price impact more decimals
+  * show position size/amounts in limit tooltip
+  * show position size in hover over curve
 
 TODO
   * factor decimals logic (FIXME factor)

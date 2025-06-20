@@ -184,6 +184,30 @@ export function useVaultsGlobal(vaultAddrs) {
     });
 }
 
+export function useVaultsDetailed(vaultAddrs) {
+    let { data: currChain, isPending: pending1 } = useEulerChain();
+    let client = usePublicClient();
+
+    return useQuery({
+        queryKey: ['maglev-vaults-detailed', currChain?.chainId, vaultAddrs],
+        staleTime: 60 * 1000,
+        enabled: !pending1 && vaultAddrs !== undefined,
+        throwOnError: true,
+        queryFn: async () => {
+            if (vaultAddrs.length === 0) return {};
+
+            let raw = await client.readContract({
+                address: currChain.addresses.maglevAddrs.maglevLens,
+                abi: maglevLensAbi.abi,
+                functionName: 'vaultsDetailed',
+                args: [vaultAddrs],
+            });
+
+            return raw;
+        },
+    });
+}
+
 
 
 export function useLTVMatrix(vaults, liquidationLtv) {
