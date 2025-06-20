@@ -258,23 +258,52 @@ export function EulerSwapViz(props) {
     let nav = v0status.value + v1status.value - v0status.debtValue - v1status.debtValue;
     let navNum = ctx.valueToNum(nav);
 
-    let extracollateral0 = 0;
-    let extracollateral1 = 0;
+    let ltv0, ltv1;
 
-    for (let i = 0; i < allVaults.length; i++) {
-        if (i === v0Index || i === v1Index) continue;
-        extracollateral0 += vaultStatuses[i].valueNum * ltvMatrix[i][v1Index];
-        extracollateral1 += vaultStatuses[i].valueNum * ltvMatrix[i][v0Index];
+    if (debtVaultIndex !== undefined && debtVaultIndex !== v0Index && debtVaultIndex !== v1Index) {
+        // Special case where the liability vault is not one of the configured vaults
+        let netDebt = vaultStatuses[debtVaultIndex].debtValueNum;
+
+        for (let i = 0; i < allVaults.length; i++) {
+            if (i === v0Index || i === v1Index || i === debtVaultIndex) continue;
+            netDebt -= vaultStatuses[i].valueNum * ltvMatrix[i][debtVaultIndex];
+        }
+
+        let adj0 = navNum * ltvMatrix[v0Index][debtVaultIndex];
+        let adj1 = navNum * ltvMatrix[v1Index][debtVaultIndex];
+        let split = (netDebt - adj1) / (adj0 - adj1);
+
+        if (navNum * ltvMatrix[v0Index][debtVaultIndex] > netDebt) {
+            ltv0 = -navNum/2;
+        } else {
+            ltv0 = (1 - split) * -navNum/2;
+        }
+
+        if (navNum * ltvMatrix[v1Index][debtVaultIndex] > netDebt) {
+            ltv1 = navNum/2;
+        } else {
+            ltv1 = split * navNum/2;
+        }
+    } else {
+        // Normal case where one of the configured vaults is the liability
+        let extracollateral0 = 0;
+        let extracollateral1 = 0;
+
+        for (let i = 0; i < allVaults.length; i++) {
+            if (i === v0Index || i === v1Index) continue;
+            extracollateral0 += vaultStatuses[i].valueNum * ltvMatrix[i][v1Index];
+            extracollateral1 += vaultStatuses[i].valueNum * ltvMatrix[i][v0Index];
+        }
+        let ltvPair = [ltvMatrix[v1Index][v0Index], ltvMatrix[v0Index][v1Index]];
+
+        ltv0 = -(navNum + extracollateral0) / (1 - ltvPair[1]);
+        ltv1 = (navNum + extracollateral1) / (1 - ltvPair[0]);
     }
-    let ltvPair = [ltvMatrix[v1Index][v0Index], ltvMatrix[v0Index][v1Index]];
 
-    let ltv0 = -(navNum + extracollateral0) / (1 - ltvPair[1]);
-    let ltv1 = (navNum + extracollateral1) / (1 - ltvPair[0]);
+
 
     let maxDomain = 1.05 * Math.max(Math.abs(ltv0), Math.abs(ltv1));
     if (domain === undefined) setDomain(props.initialDomain || maxDomain);
-
-
 
     let navMidpoint;
 
