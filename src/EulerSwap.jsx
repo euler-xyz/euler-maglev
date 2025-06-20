@@ -140,7 +140,7 @@ export function FundsSpace(props) {
         style.zIndex = 1;
     }
 
-    return <div style={style} className="eulerswap-tooltip" data-pr-position="bottom" data-pr-tooltip={props.tooltip} />
+    return <div style={style} className={`eulerswap-tooltip ${props.className || ''}`} data-pr-position="bottom" data-pr-tooltip={props.tooltip} />
 }
 
 function scaleDecimals(ctx, vault0, vault1, val) {
@@ -558,8 +558,8 @@ export function EulerSwapViz(props) {
 
 
         <div className="flex mt-6" ref={observe} style={{ marginTop: 10, width: '100%', position: 'relative', overflowX: 'clip', height: 140 }}>
-            <FundsSpace width={width} domain={domain} color="white" from={ltv0} to={ltv0} mark tooltip={`Max ${ctx.renderVaultAsset(props.vault0)}/${ctx.renderVaultAsset(props.vault1)} position:\n$${-ltv0}`} />
-            <FundsSpace width={width} domain={domain} color="white" from={ltv1} to={ltv1} mark tooltip={`Max ${ctx.renderVaultAsset(props.vault1)}/${ctx.renderVaultAsset(props.vault0)} position:\n$${ltv1}`} />
+            <FundsSpace width={width} domain={domain} color="white" style={{ borderLeft: '5px dashed crimson', }} from={ltv0} to={ltv0} mark height={90} top={-30} tooltip={`Max ${ctx.renderVaultAsset(props.vault0)}/${ctx.renderVaultAsset(props.vault1)} position:\n$${-ltv0}`} />
+            <FundsSpace width={width} domain={domain} color="white" style={{ borderRight: '5px dashed crimson', }} from={ltv1} to={ltv1} mark height={90} top={-30} tooltip={`Max ${ctx.renderVaultAsset(props.vault1)}/${ctx.renderVaultAsset(props.vault0)} position:\n$${ltv1}`} />
 
             {genVaultDisp(props.vault0, v0status, -1)}
             {genVaultDisp(props.vault1, v1status, 1)}
