@@ -214,6 +214,10 @@ export class GlobalContext {
         return typeof(value) === 'bigint' ? <span>${this.renderNiceNum(formatUnits(value, 18))}</span> : <span style={{ color: 'red', }}>?</span>;
     }
 
+    renderValuePlain(value) {
+        return typeof(value) === 'bigint' ? '$' + formatUnits(value, 18) : '?';
+    }
+
     valueToNum(value) {
         return parseFloat(formatUnits(value, 18));
     }

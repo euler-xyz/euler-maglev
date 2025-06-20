@@ -437,12 +437,12 @@ export function EulerSwapViz(props) {
 
     let genVaultDisp = (vault, status, multiplier) => {
         if (status.debtValue) {
-            return <FundsSpace width={width} domain={domain} color="#910000" from={0} to={multiplier * status.debtValueNum} tooltip={`${ctx.renderVaultAsset(vault)} debt:\n${ctx.renderValue(status.debtValue)}`} />
+            return <FundsSpace width={width} domain={domain} color="#910000" from={0} to={multiplier * status.debtValueNum} tooltip={`${ctx.renderVaultAsset(vault)} debt:\n${ctx.renderValuePlain(status.debtValue)}`} />
         } else {
             let looped = status.valueNum - navNum;
             return <>
-                <FundsSpace width={width} domain={domain} color="#8f72a6" from={0} to={multiplier * looped} tooltip={`${ctx.renderVaultAsset(vault)} looped:\n${ctx.renderValue(status.value - nav)}`} />
-                <FundsSpace width={width} domain={domain} color={nav < 0n ? "#ff6825" : "#680080"} from={multiplier * looped} to={multiplier * (looped+navNum)} tooltip={`NAV:\n${ctx.renderValue(nav)}`} />
+                <FundsSpace width={width} domain={domain} color="#8f72a6" from={0} to={multiplier * looped} tooltip={`${ctx.renderVaultAsset(vault)} looped:\n${ctx.renderValuePlain(status.value - nav)}`} />
+                <FundsSpace width={width} domain={domain} color={nav < 0n ? "#ff6825" : "#680080"} from={multiplier * looped} to={multiplier * (looped+navNum)} tooltip={`NAV:\n${ctx.renderValuePlain(nav)}`} />
             </>
         }
     };
