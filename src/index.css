@@ -1,5 +1,15 @@
 .main {
     font-family: sans;
+
+    a {
+        color: inherit;
+    }
+}
+
+.table-no-col-header {
+    thead {
+        display: none;
+    }
 }
 
 .header-bar {
@@ -65,11 +75,7 @@
         text-decoration: none;
     }
 
-    a {
-        color: inherit;
-    }
 }
-
 
 
 .ltv-matrix {

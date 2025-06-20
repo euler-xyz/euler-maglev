@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link, useParams, } from "react-router-dom";
 
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
@@ -10,6 +11,10 @@ import { Paginator } from 'primereact/paginator';
 
 import * as EulerSwapUtils from "./EulerSwapUtils";
 
+
+function renderUtilisation(ctx, global) {
+    return `${(ctx.render18Scale(global.assets ? global.borrows * EulerSwapUtils.c1e18 / global.assets : 0) * 100).toFixed(3)}%`;
+}
 
 
 export function VaultList(props) {
@@ -27,14 +32,12 @@ export function VaultList(props) {
         let global = ctx.vaultsGlobal[vaultAddr];
         let irs = ctx.getIRs(vaultAddr);
 
-        let utilisation = `${(ctx.render18Scale(global.assets ? global.borrows * EulerSwapUtils.c1e18 / global.assets : 0) * 100).toFixed(3)}%`;
-
         rows.push({
             vault: <div className="flex align-items-center">
                 {ctx.renderVaultName(vaultAddr)}
             </div>,
             totalSupply: ctx.renderUnderlying(vaultAddr, global.assets),
-            utilisation,
+            utilisation: renderUtilisation(ctx, global),
             supplyApy: <div>{(irs.supplyAPY * 100).toFixed(3)}%</div>,
             borrowApy: <div>{(irs.borrowAPY * 100).toFixed(3)}%</div>,
 
@@ -84,5 +87,67 @@ export function VaultList(props) {
         </DataTable>
 
         <Paginator first={first} rows={numRows} totalRecords={totalRows} rowsPerPageOptions={[10, 20, 30]} onPageChange={onPageChange} />
+    </div>
+}
+
+
+export function VaultInfo(props) {
+    let ctx = props.ctx;
+    let params = useParams();
+
+    if (!ctx.ready) return 'Loading...';
+    if (!ctx.addExtraVaults({ [params.vault]: true, })) return 'Loading...';
+
+    let vaultGlobal = ctx.vaultsGlobal[params.vault];
+    let vaultStatic = ctx.vaultsStatic[params.vault];
+    let irs = ctx.getIRs(params.vault);
+
+    let overviewRows = [
+        {
+            attr: 'Vault Address',
+            value: ctx.etherscanAddress(params.vault, params.vault),
+        },
+        {
+            attr: 'Underlying Asset',
+            value: ctx.etherscanAddress(vaultStatic.asset, ctx.renderVaultAsset(params.vault)),
+        },
+    ];
+
+    let statsRows = [
+        {
+            attr: 'Total Supply',
+            value: ctx.renderUnderlying(params.vault, vaultGlobal.assets),
+        },
+        {
+            attr: 'Total Borrows',
+            value: ctx.renderUnderlying(params.vault, vaultGlobal.borrows),
+        },
+        {
+            attr: 'Utilisation',
+            value: renderUtilisation(ctx, vaultGlobal),
+        },
+        {
+            attr: 'Supply APY',
+            value: <div>{(irs.supplyAPY * 100).toFixed(3)}%</div>,
+        },
+        {
+            attr: 'Borrow APY',
+            value: <div>{(irs.borrowAPY * 100).toFixed(3)}%</div>,
+        },
+    ];
+
+    let Section = (props) => <Card key={props.header}>
+        <DataTable value={props.rows} showGridlines tableStyle={{ minWidth: '50rem' }}>
+            <Column field="attr" header={props.header}></Column>
+            <Column field="value" header=""></Column>
+        </DataTable>
+    </Card>;
+
+    return <div>
+        <h1>{ctx.renderVaultName(params.vault)}</h1>
+
+        <Section header="Overview" rows={overviewRows} />
+
+        <Section header="Statistics" rows={statsRows} />
     </div>
 }

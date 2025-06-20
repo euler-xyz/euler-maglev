@@ -30,7 +30,7 @@ export function ProductsList(props) {
         }
 
         rows.push({
-            product: <Link to={`/products/${productName}`}>{productName}</Link>,
+            product: <Link to={`/product/${productName}`}>{productName}</Link>,
             numVaults: product.vaults.length,
             value: ctx.renderValue(value),
             debtValue: ctx.renderValue(debtValue),
@@ -63,13 +63,13 @@ export function ProductInfo(props) {
     {
         let row = [<th key="spacer"></th>];
         for (let vault of vaults) {
-            row.push(<th className="rotated-text" key={vault}><div><span>{ctx.rawVaultName(vault, true)}</span></div></th>);
+            row.push(<th className="rotated-text" key={vault}><div><Link to={`/vault/${vault}`}>{ctx.rawVaultName(vault, true)}</Link></div></th>);
         }
         rows.push(<tr key="header">{row}</tr>);
     }
 
     for (let i = 0; i < vaults.length; i++) {
-        let row = [<th className="row-header" key="header">{ctx.rawVaultName(vaults[i], true)}</th>];
+        let row = [<th className="row-header" key="header"><Link to={`/vault/${vaults[i]}`}>{ctx.rawVaultName(vaults[i], true)}</Link></th>];
 
         for (let j = 0; j < vaults.length; j++) {
             let data = matrix[i][j];
@@ -93,7 +93,7 @@ export function ProductInfo(props) {
             </tbody>
         </table>
 
-        <div className="flex align-items-center mt-4">
+        <div className="flex align-items-center mt-4 ml-6">
             <div className="flex align-items-center">
                 <InputSwitch checked={liquidationLtv} onChange={(e) => setLiquidationLtv(e.value)} />
                 <span className="ml-3">{liquidationLtv ? 'Liquidation' : 'Borrow'} LTVs</span>
@@ -105,7 +105,7 @@ export function ProductInfo(props) {
             </div>
         </div>
 
-        <div className="flex align-items-center mt-4">
+        <div className="flex align-items-center mt-4 ml-6">
             * Columns are liability vaults, rows are collateral vaults
         </div>
     </div>

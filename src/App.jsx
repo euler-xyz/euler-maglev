@@ -10,7 +10,7 @@ import { Tooltip as ReactTooltip } from 'react-tooltip';
 
 import { useGlobalContext } from "./Ctx";
 import { getWagmiChainConfigs } from './ChainConfig';
-import { VaultList } from './VaultList';
+import { VaultList, VaultInfo } from './Vaults';
 import { ProductsList, ProductInfo } from './Products';
 import { AccountPanel } from './Account';
 import { EulerSwapBrowse, EulerSwapShowInstance } from './EulerSwap';
@@ -62,9 +62,10 @@ function Main() {
 
         <Routes>
             <Route path="/" element={<VaultList ctx={ctx} />} />
+            <Route path="/vault/:vault" element={<VaultInfo ctx={ctx} />} />
 
             <Route path="/products/" element={<ProductsList ctx={ctx} />} />
-            <Route path="/products/:product" element={<ProductInfo ctx={ctx} />} />
+            <Route path="/product/:product" element={<ProductInfo ctx={ctx} />} />
 
             <Route path="/account/" element={<AccountPanel ctx={ctx} />} />
             <Route path="/euler-swap/" element={<EulerSwapBrowse ctx={ctx} />} />

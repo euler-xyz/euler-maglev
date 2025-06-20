@@ -109,18 +109,21 @@ export class GlobalContext {
         let label = this.labels.vaults[addr];
 
         if (label) {
-            if (!noLinks) label = <Link to={`/products/${label}`}>{label}</Link>;
+            if (!noLinks) label = <Link to={`/product/${label}`}>{label}</Link>;
         } else {
             label = <span style={{ color: 'red', }}>UNKNOWN</span>;
         }
 
-        let m = vs.symbol.match(/^e(.*)-(\d+)$/);
+        let m = vs.symbol.match(/^e(.*-\d+)$/);
         let sym = m[1];
-        let id = m[2];
+
+        if (!noLinks) {
+            sym = <Link to={`/vault/${addr}`}>{sym}</Link>;
+        }
 
         return <div className="vault-name">
             <div>
-                <span className="symbol">{sym}-{id}</span>
+                <span className="symbol">{sym}</span>
             </div>
             <div className="product">
                 {label}
@@ -273,7 +276,10 @@ export class GlobalContext {
         if (!this.currChain) return addr;
         let config = this.chainConfigs[this.currChain.chainId];
         let url = config?.blockExplorers?.default?.url;
-        if (!url) return addr;
+        if (!url) {
+            if (this.currChain.chainId === 31337) url = 'https://unknown-block-explorer.example';
+            else return text;
+        }
 
         return <a href={`${url}/address/${addr}`}>{text || addr}</a>
     }
