@@ -122,6 +122,8 @@
 .vault-details-card {
     margin-top: 20px;
     padding-top: 20px;
+    margin-left: 20px;
+    margin-right: 20px;
 
     .p-card-header {
         font-size: 150%;

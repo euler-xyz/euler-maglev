@@ -33,7 +33,7 @@ export function AccountPanel(props) {
     tabs.push({
         label: `+ New`,
         command: () => {
-            ctx.setNumSubAccounts(ctx.numSubAccounts + 1);
+            ctx.args.setNumSubAccounts(ctx.numSubAccounts + 1);
         },
     });
 

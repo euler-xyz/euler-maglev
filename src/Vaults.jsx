@@ -300,7 +300,7 @@ export function VaultInfo(props) {
     );
 
     return <div>
-        <h1>{ctx.renderVaultName(params.vault)}</h1>
+        <h1 className="ml-4">{ctx.renderVaultName(params.vault)}</h1>
 
         <Section header="Overview">
             <Table rows={overviewRows} />
