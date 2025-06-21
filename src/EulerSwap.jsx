@@ -160,8 +160,7 @@ export function EulerSwapParamsTable(props) {
 
     let priceNum;
     if (params.priceX !== undefined) {
-        // FIXME factor
-        priceNum = parseFloat(formatUnits(10n**18n * params.priceX * 10n**(BigInt(ctx.vaultDecimals(params.vault0))) / params.priceY / 10n**(BigInt(ctx.vaultDecimals(params.vault1))), 18));
+        priceNum = parseFloat(formatUnits(scaleDecimals(ctx, params.vault0, params.vault1, 10n**18n * params.priceX) / params.priceY, 18));
     }
 
     let feeRendered = params.fee == undefined ? '-' : ctx.render18ScalePercent(params.fee);
@@ -451,21 +450,18 @@ export function EulerSwapViz(props) {
     let priceInfoAtFundSpace = (fundSpacePoint) => {
         let o = {};
 
-        // FIXME factor
-        o.eqPrice = ctx.render18Scale(10n**18n * paramsRaw.priceX * 10n**(BigInt(ctx.vaultDecimals(paramsRaw.vault0))) / paramsRaw.priceY / 10n**(BigInt(ctx.vaultDecimals(paramsRaw.vault1))));
+        o.eqPrice = ctx.render18Scale(scaleDecimals(ctx, paramsRaw.vault0, paramsRaw.vault1, 10n**18n * paramsRaw.priceX) / paramsRaw.priceY);
 
         if (fundSpacePoint >= 0) {
             let x = paramsRaw.equilibriumReserve0 - ctx.valueToAmount(paramsRaw.vault0, fundSpacePoint);
             if (x === 0n) return o;
-            // FIXME factor
-            o.xyPrice = ctx.render18Scale(-LibEulerSwap.df_dx(x, paramsRaw.priceX, paramsRaw.priceY, paramsRaw.equilibriumReserve0, paramsRaw.concentrationX) * 10n**(BigInt(ctx.vaultDecimals(paramsRaw.vault0))) / 10n**(BigInt(ctx.vaultDecimals(paramsRaw.vault1))));
+            o.xyPrice = ctx.render18Scale(scaleDecimals(ctx, paramsRaw.vault0, paramsRaw.vault1, -LibEulerSwap.df_dx(x, paramsRaw.priceX, paramsRaw.priceY, paramsRaw.equilibriumReserve0, paramsRaw.concentrationX)));
             o.yxPrice = 1/o.xyPrice;
             o.priceImpact = 1 - (o.eqPrice / o.xyPrice);
         } else {
             let x = paramsRaw.equilibriumReserve1 - ctx.valueToAmount(paramsRaw.vault1, -fundSpacePoint);
             if (x === 0n) return o;
-            // FIXME factor
-            o.yxPrice = ctx.render18Scale(-LibEulerSwap.df_dx(x, paramsRaw.priceY, paramsRaw.priceX, paramsRaw.equilibriumReserve1, paramsRaw.concentrationY) * 10n**(BigInt(ctx.vaultDecimals(paramsRaw.vault1))) / 10n**(BigInt(ctx.vaultDecimals(paramsRaw.vault0))));
+            o.yxPrice = ctx.render18Scale(scaleDecimals(ctx, paramsRaw.vault1, paramsRaw.vault0, -LibEulerSwap.df_dx(x, paramsRaw.priceY, paramsRaw.priceX, paramsRaw.equilibriumReserve1, paramsRaw.concentrationY)));
             o.xyPrice = 1/o.yxPrice;
             o.priceImpact = 1 - (o.xyPrice / o.eqPrice);
         }
@@ -494,10 +490,6 @@ export function EulerSwapViz(props) {
 
             <div>
                 {ctx.renderVaultAsset(props.vault1)}/{ctx.renderVaultAsset(props.vault0)}: {priceInfo.yxPrice}
-            </div>
-
-            <div className="mt-4">
-                ${fundSpacePoint}
             </div>
         </div>);
     };
