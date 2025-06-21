@@ -424,8 +424,8 @@ export function EulerSwapViz(props) {
             initialStateRaw.currReserve0 = LibEulerSwap.f(initialStateRaw.currReserve1, paramsRaw.priceY, paramsRaw.priceX, paramsRaw.equilibriumReserve1, paramsRaw.equilibriumReserve0, paramsRaw.concentrationY);
         }
 
-        if (!LibEulerSwap.verifyOnCurveExact(initialStateRaw.currReserve0, initialStateRaw.currReserve1, paramsRaw.priceX, paramsRaw.priceY, paramsRaw.equilibriumReserve0, paramsRaw.equilibriumReserve1, paramsRaw.concentrationX, paramsRaw.concentrationY)) {
-            [initialStateRaw.currReserve0, initialStateRaw.currReserve1] = LibEulerSwap.tightenToCurve(initialStateRaw.currReserve0, initialStateRaw.currReserve1, paramsRaw.priceX, paramsRaw.priceY, paramsRaw.equilibriumReserve0, paramsRaw.equilibriumReserve1, paramsRaw.concentrationX, paramsRaw.concentrationY);
+        if (!LibEulerSwap.verifyOnCurveExact(paramsRaw, initialStateRaw)) {
+            [initialStateRaw.currReserve0, initialStateRaw.currReserve1] = LibEulerSwap.tightenToCurve(paramsRaw, initialStateRaw);
         }
     } catch(e) {
         console.warn(e);

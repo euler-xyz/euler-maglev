@@ -156,7 +156,6 @@ export function VaultInfo(props) {
     let vaultStatic = ctx.vaultsStatic[params.vault];
     let irs = ctx.getIRs(params.vault);
     let vaultDetailed = vaultsDetailed[0];
-    console.log(vaultDetailed);
 
     let unitOfAccount = vaultDetailed.unitOfAccount;
 

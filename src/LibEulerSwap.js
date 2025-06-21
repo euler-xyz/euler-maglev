@@ -65,54 +65,6 @@ export function verify(x, y, px, py, x0, y0, cx, cy) {
     }
 }
 
-export function verifyOnCurveExact(x, y, px, py, x0, y0, cx, cy) {
-    let v1 = verify(x, y, px, py, x0, y0, cx, cy);
-    let v2 = x === 0n || !verify(x - 1n, y, px, py, x0, y0, cx, cy);
-    let v3 = y === 0n || !verify(x, y - 1n, px, py, x0, y0, cx, cy);
-
-    return (v1 && v2 && v3);
-}
-
-export function tightenToCurve(x, y, px, py, x0, y0, cx, cy) {
-    if (!verify(x, y, px, py, x0, y0, cx, cy)) throw Error('not on or above curve');
-
-    let tighten = (dim) => {
-        let val = 1n;
-
-        // Phase 1: Keep doubling skim amount until it fails
-
-        while (true) {
-            let [tx, ty] = dim ? [x - val, y] : [x, y - val];
-
-            if (verify(tx, ty, px, py, x0, y0, cx, cy)) {
-                [x, y] = [tx, ty];
-                val *= 2n;
-            } else {
-                break;
-            }
-        }
-
-        // Phase 2: Keep halving skim amount until 1 wei skim fails
-
-        while (true) {
-            if (val > 1n) val /= 2n;
-
-            let [tx, ty] = dim ? [x - val, y] : [x, y - val];
-
-            if (verify(tx, ty, px, py, x0, y0, cx, cy)) {
-                [x, y] = [tx, ty];
-            } else {
-                if (val === 1n) break;
-            }
-        }
-    };
-
-    tighten(true);
-    tighten(false);
-
-    return [x, y];
-}
-
 export function df_dx(x, px, py, x0, cx) {
     const r = (((x0 * x0) / x) * c1e18) / x;
     return (-px * (cx + ((c1e18 - cx) * r) / c1e18)) / py;
@@ -203,6 +155,79 @@ export function fInverse(y, px, py, x0, y0, cx) {
 
 
 
+
+
+
+
+export function verifyPoint(params, reserves) {
+    return verify(
+        reserves.currReserve0,
+        reserves.currReserve1,
+        params.priceX,
+        params.priceY,
+        params.equilibriumReserve0,
+        params.equilibriumReserve1,
+        params.concentrationX,
+        params.concentrationY
+    );
+}
+
+function makeReserves(r0, r1) {
+    return {
+        currReserve0: r0,
+        currReserve1: r1,
+    };
+}
+
+export function verifyOnCurveExact(params, reserves) {
+    let [x, y] = [reserves.currReserve0, reserves.currReserve1];
+
+    let v1 = verifyPoint(params, makeReserves(x, y));
+    let v2 = x === 0n || !verifyPoint(params, makeReserves(x - 1n, y));
+    let v3 = y === 0n || !verifyPoint(params, makeReserves(x, y - 1n));
+
+    return (v1 && v2 && v3);
+}
+
+export function tightenToCurve(params, reserves) {
+    if (!verifyPoint(params, reserves)) throw Error('not on or above curve');
+
+    let tighten = (dim) => {
+        let val = 1n;
+
+        // Phase 1: Keep doubling skim amount until it fails
+
+        while (true) {
+            let [tx, ty] = dim ? [x - val, y] : [x, y - val];
+
+            if (verifyPoint(params, makeReserves(tx, ty))) {
+                [x, y] = [tx, ty];
+                val *= 2n;
+            } else {
+                break;
+            }
+        }
+
+        // Phase 2: Keep halving skim amount until 1 wei skim fails
+
+        while (true) {
+            if (val > 1n) val /= 2n;
+
+            let [tx, ty] = dim ? [x - val, y] : [x, y - val];
+
+            if (verifyPoint(params, makeReserves(tx, ty))) {
+                [x, y] = [tx, ty];
+            } else {
+                if (val === 1n) break;
+            }
+        }
+    };
+
+    tighten(true);
+    tighten(false);
+
+    return [x, y];
+}
 
 export function computePriceFraction(price, decimals0, decimals1) {
     let price18scale;
