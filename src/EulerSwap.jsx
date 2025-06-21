@@ -22,6 +22,9 @@ import { InputSwitch } from 'primereact/inputswitch';
 
 import * as Lens from "./Lens";
 import * as EulerSwapUtils from "./EulerSwapUtils";
+import * as LibEulerSwap from "./LibEulerSwap";
+
+const c1e18 = 10n**18n;
 
 
 function VaultChooser(props) {
@@ -90,7 +93,7 @@ function decodeRawParams(ctx, vault0, vault1, navMidpoint, rawParams, currReserv
     return {
         concentrationX: parse18Scale(rawParams.concentrationX) * 100,
         concentrationY: parse18Scale(rawParams.concentrationY) * 100,
-        price: parse18Scale(scaleDecimals(ctx, vault0, vault1, EulerSwapUtils.c1e18 * rawParams.priceX / rawParams.priceY)),
+        price: parse18Scale(scaleDecimals(ctx, vault0, vault1, c1e18 * rawParams.priceX / rawParams.priceY)),
         fee: parse18Scale(rawParams.fee) * 100,
         curveLeft,
         curveMid,
@@ -370,24 +373,24 @@ export function EulerSwapViz(props) {
     };
 
 
-    let parsedPrice = EulerSwapUtils.computePriceFraction(params.price, ctx.vaultDecimals(props.vault0), ctx.vaultDecimals(props.vault1));
+    let parsedPrice = LibEulerSwap.computePriceFraction(params.price, ctx.vaultDecimals(props.vault0), ctx.vaultDecimals(props.vault1));
 
     let feeParsed;
     try {
         feeParsed = ctx.numTo18Scale(params.fee / 100);
-        if (feeParsed > EulerSwapUtils.c1e18) feeParsed = undefined;
+        if (feeParsed > c1e18) feeParsed = undefined;
     } catch (e) {}
 
     let concentrationXParsed;
     try {
         concentrationXParsed = ctx.numTo18Scale(params.concentrationX / 100);
-        if (concentrationXParsed > EulerSwapUtils.c1e18) concentrationXParsed = undefined;
+        if (concentrationXParsed > c1e18) concentrationXParsed = undefined;
     } catch (e) {}
 
     let concentrationYParsed;
     try {
         concentrationYParsed = ctx.numTo18Scale(params.concentrationY / 100);
-        if (concentrationYParsed > EulerSwapUtils.c1e18) concentrationYParsed = undefined;
+        if (concentrationYParsed > c1e18) concentrationYParsed = undefined;
     } catch (e) {}
 
     let paramsRaw = {
@@ -415,14 +418,14 @@ export function EulerSwapViz(props) {
             initialStateRaw.currReserve1 = paramsRaw.equilibriumReserve1;
         } else if (navMidpoint > params.curveMid) {
             initialStateRaw.currReserve0 = paramsRaw.equilibriumReserve0 - ctx.valueToAmount(props.vault0, navMidpoint - params.curveMid);
-            initialStateRaw.currReserve1 = EulerSwapUtils.f(initialStateRaw.currReserve0, paramsRaw.priceX, paramsRaw.priceY, paramsRaw.equilibriumReserve0, paramsRaw.equilibriumReserve1, paramsRaw.concentrationX);
+            initialStateRaw.currReserve1 = LibEulerSwap.f(initialStateRaw.currReserve0, paramsRaw.priceX, paramsRaw.priceY, paramsRaw.equilibriumReserve0, paramsRaw.equilibriumReserve1, paramsRaw.concentrationX);
         } else {
             initialStateRaw.currReserve1 = paramsRaw.equilibriumReserve1 - ctx.valueToAmount(props.vault1, params.curveMid - navMidpoint);
-            initialStateRaw.currReserve0 = EulerSwapUtils.f(initialStateRaw.currReserve1, paramsRaw.priceY, paramsRaw.priceX, paramsRaw.equilibriumReserve1, paramsRaw.equilibriumReserve0, paramsRaw.concentrationY);
+            initialStateRaw.currReserve0 = LibEulerSwap.f(initialStateRaw.currReserve1, paramsRaw.priceY, paramsRaw.priceX, paramsRaw.equilibriumReserve1, paramsRaw.equilibriumReserve0, paramsRaw.concentrationY);
         }
 
-        if (!EulerSwapUtils.verifyOnCurveExact(initialStateRaw.currReserve0, initialStateRaw.currReserve1, paramsRaw.priceX, paramsRaw.priceY, paramsRaw.equilibriumReserve0, paramsRaw.equilibriumReserve1, paramsRaw.concentrationX, paramsRaw.concentrationY)) {
-            [initialStateRaw.currReserve0, initialStateRaw.currReserve1] = EulerSwapUtils.tightenToCurve(initialStateRaw.currReserve0, initialStateRaw.currReserve1, paramsRaw.priceX, paramsRaw.priceY, paramsRaw.equilibriumReserve0, paramsRaw.equilibriumReserve1, paramsRaw.concentrationX, paramsRaw.concentrationY);
+        if (!LibEulerSwap.verifyOnCurveExact(initialStateRaw.currReserve0, initialStateRaw.currReserve1, paramsRaw.priceX, paramsRaw.priceY, paramsRaw.equilibriumReserve0, paramsRaw.equilibriumReserve1, paramsRaw.concentrationX, paramsRaw.concentrationY)) {
+            [initialStateRaw.currReserve0, initialStateRaw.currReserve1] = LibEulerSwap.tightenToCurve(initialStateRaw.currReserve0, initialStateRaw.currReserve1, paramsRaw.priceX, paramsRaw.priceY, paramsRaw.equilibriumReserve0, paramsRaw.equilibriumReserve1, paramsRaw.concentrationX, paramsRaw.concentrationY);
         }
     } catch(e) {
         console.warn(e);
@@ -457,14 +460,14 @@ export function EulerSwapViz(props) {
             let x = paramsRaw.equilibriumReserve0 - ctx.valueToAmount(paramsRaw.vault0, fundSpacePoint);
             if (x === 0n) return o;
             // FIXME factor
-            o.xyPrice = ctx.render18Scale(-EulerSwapUtils.df_dx(x, paramsRaw.priceX, paramsRaw.priceY, paramsRaw.equilibriumReserve0, paramsRaw.concentrationX) * 10n**(BigInt(ctx.vaultDecimals(paramsRaw.vault0))) / 10n**(BigInt(ctx.vaultDecimals(paramsRaw.vault1))));
+            o.xyPrice = ctx.render18Scale(-LibEulerSwap.df_dx(x, paramsRaw.priceX, paramsRaw.priceY, paramsRaw.equilibriumReserve0, paramsRaw.concentrationX) * 10n**(BigInt(ctx.vaultDecimals(paramsRaw.vault0))) / 10n**(BigInt(ctx.vaultDecimals(paramsRaw.vault1))));
             o.yxPrice = 1/o.xyPrice;
             o.priceImpact = 1 - (o.eqPrice / o.xyPrice);
         } else {
             let x = paramsRaw.equilibriumReserve1 - ctx.valueToAmount(paramsRaw.vault1, -fundSpacePoint);
             if (x === 0n) return o;
             // FIXME factor
-            o.yxPrice = ctx.render18Scale(-EulerSwapUtils.df_dx(x, paramsRaw.priceY, paramsRaw.priceX, paramsRaw.equilibriumReserve1, paramsRaw.concentrationY) * 10n**(BigInt(ctx.vaultDecimals(paramsRaw.vault1))) / 10n**(BigInt(ctx.vaultDecimals(paramsRaw.vault0))));
+            o.yxPrice = ctx.render18Scale(-LibEulerSwap.df_dx(x, paramsRaw.priceY, paramsRaw.priceX, paramsRaw.equilibriumReserve1, paramsRaw.concentrationY) * 10n**(BigInt(ctx.vaultDecimals(paramsRaw.vault1))) / 10n**(BigInt(ctx.vaultDecimals(paramsRaw.vault0))));
             o.xyPrice = 1/o.yxPrice;
             o.priceImpact = 1 - (o.xyPrice / o.eqPrice);
         }
@@ -493,6 +496,10 @@ export function EulerSwapViz(props) {
 
             <div>
                 {ctx.renderVaultAsset(props.vault1)}/{ctx.renderVaultAsset(props.vault0)}: {priceInfo.yxPrice}
+            </div>
+
+            <div className="mt-4">
+                ${fundSpacePoint}
             </div>
         </div>);
     };
@@ -765,7 +772,7 @@ export function EulerSwapBrowse(props) {
         slip = undefined;
     } else {
         slip /= 100;
-        slip = EulerSwapUtils.c1e18 - parseUnits(slip.toString(), 18);
+        slip = c1e18 - parseUnits(slip.toString(), 18);
     }
 
     let { data: eulerSwapQuotes } = Lens.useEulerSwapQuoteMulti(ctx, eulerSwapData && eulerSwapData.map(e => e.addr), assetA, assetB, swapAmountParsed, exactIn);
@@ -813,8 +820,8 @@ export function EulerSwapBrowse(props) {
 
         if (eulerSwapQuotes && eulerSwapQuotes[i] && swapReady) {
             let quote;
-            if (exactIn) quote = eulerSwapQuotes[i] * slip / EulerSwapUtils.c1e18;
-            else quote = EulerSwapUtils.c1e18 * eulerSwapQuotes[i] / slip;
+            if (exactIn) quote = eulerSwapQuotes[i] * slip / c1e18;
+            else quote = c1e18 * eulerSwapQuotes[i] / slip;
 
             let quoteAsset = (exactIn ? assetBInfo : assetAInfo).addr;
             let quoteVault = e.asset0 === quoteAsset ? e.params.vault0 : e.params.vault1;

@@ -10,12 +10,14 @@ import { InputText } from 'primereact/inputtext';
 import { Paginator } from 'primereact/paginator';
 import { Chart } from 'primereact/chart';
 
-import * as EulerSwapUtils from "./EulerSwapUtils";
 import * as Lens from "./Lens";
 
 
+const c1e18 = 10n**18n;
+
+
 function renderUtilisation(ctx, global) {
-    return `${(ctx.render18Scale(global.assets ? global.borrows * EulerSwapUtils.c1e18 / global.assets : 0) * 100).toFixed(3)}%`;
+    return `${(ctx.render18Scale(global.assets ? global.borrows * c1e18 / global.assets : 0) * 100).toFixed(3)}%`;
 }
 
 
