@@ -424,9 +424,7 @@ export function EulerSwapViz(props) {
             initialStateRaw.currReserve0 = LibEulerSwap.f(initialStateRaw.currReserve1, paramsRaw.priceY, paramsRaw.priceX, paramsRaw.equilibriumReserve1, paramsRaw.equilibriumReserve0, paramsRaw.concentrationY);
         }
 
-        if (!LibEulerSwap.verifyOnCurveExact(paramsRaw, initialStateRaw)) {
-            [initialStateRaw.currReserve0, initialStateRaw.currReserve1] = LibEulerSwap.tightenToCurve(paramsRaw, initialStateRaw);
-        }
+        [initialStateRaw.currReserve0, initialStateRaw.currReserve1] = LibEulerSwap.tightenToCurve(paramsRaw, initialStateRaw.currReserve0, initialStateRaw.currReserve1);
     } catch(e) {
         console.warn(e);
         initialStateRaw.currReserve0 = initialStateRaw.currReserve1 = undefined;
@@ -809,6 +807,8 @@ export function EulerSwapBrowse(props) {
         if (assetAInfo && e.asset0 !== assetAInfo.addr && e.asset1 !== assetAInfo.addr) continue;
         if (assetBInfo && e.asset0 !== assetBInfo.addr && e.asset1 !== assetBInfo.addr) continue;
 
+        let currPrice = LibEulerSwap.getCurrentPrice(e.params, e.reserve0, e.reserve1);
+
         let row = {
             account: <Link to={`/euler-swap/${e.params.eulerAccount}`}>{e.params.eulerAccount.substr(0,8)}...</Link>,
             vault0: ctx.renderVaultName(e.params.vault0),
@@ -816,6 +816,11 @@ export function EulerSwapBrowse(props) {
 
             amount0: ctx.renderUnderlying(e.params.vault0, e.outLimit10),
             amount1: ctx.renderUnderlying(e.params.vault1, e.outLimit01),
+
+            price: <div>
+                {ctx.render18Scale(currPrice).toFixed(6)}<br/>
+                {ctx.render18Scale(c1e18 * c1e18 / currPrice).toFixed(6)}
+            </div>,
         };
 
         if (eulerSwapQuotes && eulerSwapQuotes[i] && swapReady) {
@@ -910,6 +915,7 @@ export function EulerSwapBrowse(props) {
             <Column field="amount0" header="Available 0"></Column>
             <Column field="vault1" header="Vault 1"></Column>
             <Column field="amount1" header="Available 1"></Column>
+            <Column field="price" header="Price"></Column>
             <Column field="quote" header="Quote"></Column>
             <Column field="swap" header="Swap"></Column>
         </DataTable>
