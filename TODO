@@ -1,14 +1,20 @@
 RELEASE
-  * manually enter values
   * on swap browse, show current marginal prices of pools
-  * don't round-trip price, fee, concentration, through Number
+  * don't round-trip price/fee/concentration through Number
     ? telosc guys: slider can't go below .3%
-  * fix hardcoded gas limits (foundry problem?)
-  * price impact more decimals
+
+  * links to spy mode
+  * bug where you need to reload when switching chains
+
   * show position size/amounts in limit tooltip
   * show position size in hover over curve
+  * when hovering, show an overlay line
+
+  ? fix hardcoded gas limits (foundry problem?)
+  ? support manually entering EulerSwap params
 
 TODO
+  * chain switcher when you're not connected
   * factor decimals logic (FIXME factor)
   * each sub-account tab should get its own URL route
   * spy mode
