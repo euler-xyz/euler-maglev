@@ -483,8 +483,8 @@ export function EulerSwapViz(props) {
         let priceInfo = priceInfoAtFundSpace(fundSpacePoint - params.curveMid);
 
         setCurveInfo(<div>
-            <div>
-                Impact: {(priceInfo.priceImpact * 100).toFixed(2)}%
+            <div className="mb-4">
+                Price impact: {(priceInfo.priceImpact * 100).toFixed(6)}%
             </div>
 
             <div>
