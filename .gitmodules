@@ -1,0 +1,3 @@
+[submodule "lib/euler-swap-jslib"]
+	path = lib/euler-swap-jslib
+	url = git@github.com:euler-xyz/euler-swap-jslib.git

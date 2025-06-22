@@ -10,11 +10,10 @@ RELEASE
   * when hovering, show an overlay line
 
   ? fix hardcoded gas limits (foundry problem?)
-  ? support manually entering EulerSwap params
+  ? support manually entering reserves
 
 TODO
   * chain switcher when you're not connected
-  * factor decimals logic (FIXME factor)
   * each sub-account tab should get its own URL route
   * spy mode
   * figure out better solution for RPC URLs

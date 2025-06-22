@@ -1,7 +1,7 @@
 import { parseAbi, zeroAddress, encodeFunctionData } from 'viem';
 
 import * as Utils from './Utils';
-import * as LibEulerSwap from './LibEulerSwap';
+import * as LibEulerSwap from "../lib/euler-swap-jslib/src/LibEulerSwap";
 
 import evcAbi from '../abis/EthereumVaultConnector.json';
 import iEulerSwapAbi from '../abis/IEulerSwap.json';

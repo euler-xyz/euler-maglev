@@ -22,7 +22,7 @@ import { InputSwitch } from 'primereact/inputswitch';
 
 import * as Lens from "./Lens";
 import * as EulerSwapUtils from "./EulerSwapUtils";
-import * as LibEulerSwap from "./LibEulerSwap";
+import * as LibEulerSwap from "../lib/euler-swap-jslib/src/LibEulerSwap";
 
 const c1e18 = 10n**18n;
 
