@@ -5,8 +5,6 @@ RELEASE
   * links to spy mode
   * bug where you need to reload when switching chains
 
-  * show position size/amounts in limit tooltip
-  * show position size in hover over curve
   * when hovering, show an overlay line
 
   ? fix hardcoded gas limits (foundry problem?)

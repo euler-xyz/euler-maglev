@@ -469,6 +469,41 @@ export function EulerSwapViz(props) {
         return o;
     };
 
+    let fundsSpaceToPosition = (fundSpacePoint) => {
+        let o = {};
+
+        if (fundSpacePoint < 0) {
+            o.value0 = -fundSpacePoint + (navNum / 2);
+            o.value1 = navNum - o.value0;
+            if (o.value1 < 0) o.leverage = o.value0 / navNum;
+        } else {
+            o.value1 = fundSpacePoint + (navNum / 2);
+            o.value0 = navNum - o.value1;
+            if (o.value0 < 0) o.leverage = o.value1 / navNum;
+        }
+
+        o.amount0 = ctx.valueToAmount(props.vault0, o.value0);
+        o.amount1 = ctx.valueToAmount(props.vault1, o.value1);
+
+        return o;
+    };
+
+    let renderPosition = (position) => {
+        return <>
+            <div>
+                {ctx.renderVaultAsset(props.vault0)} = {ctx.renderUnderlyingPlain(props.vault0, position.amount0)} (${ctx.renderNiceNum(position.value0, true)})
+            </div>
+
+            <div>
+                {ctx.renderVaultAsset(props.vault1)} = {ctx.renderUnderlyingPlain(props.vault1, position.amount1)} (${ctx.renderNiceNum(position.value1, true)})
+            </div>
+
+            {position.leverage && <div>
+                {position.leverage.toFixed(3)}x {ctx.renderVaultAsset(position.value0 > 0 ? props.vault0 : props.vault1)}/{ctx.renderVaultAsset(position.value0 > 0 ? props.vault1 : props.vault0)}
+            </div>}
+        </>
+    };
+
     let handleCurveInfoMouseMove = () => {
         let bounds = event.target.parentElement.getBoundingClientRect();
         let pixelX = event.clientX - bounds.left;
@@ -478,6 +513,7 @@ export function EulerSwapViz(props) {
         let fundSpacePoint = pixelToFundSpace(width, domain, pixelX);
 
         let priceInfo = priceInfoAtFundSpace(fundSpacePoint - params.curveMid);
+        let position = fundsSpaceToPosition(fundSpacePoint);
 
         setCurveInfo(<div>
             <div className="mb-4">
@@ -490,6 +526,10 @@ export function EulerSwapViz(props) {
 
             <div>
                 {ctx.renderVaultAsset(props.vault1)}/{ctx.renderVaultAsset(props.vault0)}: {priceInfo.yxPrice}
+            </div>
+
+            <div className="mt-4">
+                {renderPosition(position)}
             </div>
         </div>);
     };
@@ -584,8 +624,8 @@ export function EulerSwapViz(props) {
 
 
         <div className="flex mt-6" ref={observe} style={{ marginTop: 10, width: '100%', position: 'relative', overflowX: 'clip', height: 140 }}>
-            <FundsSpace width={width} domain={domain} color="white" style={{ borderLeft: '5px dashed crimson', }} from={ltv0} to={ltv0} mark height={90} top={-30} tooltip={`Max ${ctx.renderVaultAsset(props.vault0)}/${ctx.renderVaultAsset(props.vault1)} position:\n$${-ltv0}`} />
-            <FundsSpace width={width} domain={domain} color="white" style={{ borderRight: '5px dashed crimson', }} from={ltv1} to={ltv1} mark height={90} top={-30} tooltip={`Max ${ctx.renderVaultAsset(props.vault1)}/${ctx.renderVaultAsset(props.vault0)} position:\n$${ltv1}`} />
+            <FundsSpace width={width} domain={domain} color="white" style={{ borderLeft: '5px dashed crimson', }} from={ltv0} to={ltv0} mark height={90} top={-30} tooltip={`Max ${ctx.renderVaultAsset(props.vault0)}/${ctx.renderVaultAsset(props.vault1)} position`} />
+            <FundsSpace width={width} domain={domain} color="white" style={{ borderRight: '5px dashed crimson', }} from={ltv1} to={ltv1} mark height={90} top={-30} tooltip={`Max ${ctx.renderVaultAsset(props.vault1)}/${ctx.renderVaultAsset(props.vault0)} position`} />
 
             {genVaultDisp(props.vault0, v0status, -1)}
             {genVaultDisp(props.vault1, v1status, 1)}
@@ -810,8 +850,8 @@ export function EulerSwapBrowse(props) {
             amount1: ctx.renderUnderlying(e.params.vault1, e.outLimit01),
 
             price: <div>
-                {ctx.render18Scale(currPrice).toFixed(6)}<br/>
-                {ctx.render18Scale(c1e18 * c1e18 / currPrice).toFixed(6)}
+                {ctx.render18Scale(scaleDecimals(ctx, e.params.vault0, e.params.vault1, currPrice)).toFixed(6)}<br/>
+                {ctx.render18Scale(scaleDecimals(ctx, e.params.vault1, e.params.vault0, c1e18 * c1e18 / currPrice)).toFixed(6)}
             </div>,
         };
 

@@ -175,9 +175,9 @@ export class GlobalContext {
         return `${parseFloat(formatUnits(v, 18)) * 100}%`;
     }
 
-    renderNiceNum(n) {
+    renderNiceNum(n, plain) {
         let orig = n;
-        n = parseFloat(n);
+        n = parseFloat(Math.abs(n));
 
         let unit = '';
         if (n > 1e9) {
@@ -193,7 +193,9 @@ export class GlobalContext {
 
         n = Number(n.toPrecision(5));
 
-        let str = fromExponential(n) + unit;
+        let str = (orig < 0 ? '-' : '') + fromExponential(n) + unit;
+
+        if (plain) return str;
 
         return <span data-tooltip-id="maglev-tooltip" data-tooltip-content={orig} data-tooltip-place="bottom">{str}</span>;
     }
@@ -215,6 +217,11 @@ export class GlobalContext {
 
     renderValue(value) {
         return typeof(value) === 'bigint' ? <span>${this.renderNiceNum(formatUnits(value, 18))}</span> : <span style={{ color: 'red', }}>?</span>;
+    }
+
+    renderUnderlyingPlain(vaultAddr, amount) {
+        let decimals = this.vaultDecimals(vaultAddr);
+        return this.renderNiceNum(formatUnits(amount, decimals), true);
     }
 
     renderValuePlain(value) {
