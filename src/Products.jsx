@@ -9,6 +9,10 @@ import { InputSwitch } from 'primereact/inputswitch';
 import * as Lens from "./Lens";
 
 
+function accumulate(accum, addend) {
+    if (typeof(accum) !== 'bigint' || typeof(addend) !== 'bigint') return NaN;
+    return accum + addend;
+}
 
 export function ProductsList(props) {
     let ctx = props.ctx;
@@ -24,9 +28,10 @@ export function ProductsList(props) {
         let debtValue = 0n;
 
         for (let vault of product.vaults) {
-            let status = ctx.vaultStatus(vault);
-            value += status.value;
-            debtValue += status.debtValue;
+            let global = ctx.vaultsGlobal[vault];
+
+            value = accumulate(value, ctx.amountToValue(vault, global.assets));
+            debtValue = accumulate(debtValue, ctx.amountToValue(vault, global.borrows));
         }
 
         rows.push({

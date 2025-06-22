@@ -175,6 +175,10 @@ export class GlobalContext {
         return `${formatUnits(v * 100n, 18)}%`;
     }
 
+    render18ScalePercentDecimals(v, decimals) {
+        return `${parseFloat(formatUnits(v * 100n, 18)).toFixed(decimals)}%`;
+    }
+
     renderNiceNum(n, plain) {
         let orig = n;
         n = parseFloat(Math.abs(n));
