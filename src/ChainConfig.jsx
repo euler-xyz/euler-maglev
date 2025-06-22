@@ -25,7 +25,7 @@ export function getChainConfigs() {
             };
 
             chain.addresses.maglevAddrs = {
-                maglevLens: '0x23731d5b57f4199afd5080eaa9f22715df45d7c2',
+                maglevLens: '0xb4876B74638F417Fa620B6169cdf7690351441fE',
             };
         } else if (chain.chainId === 130) {
             chain.addresses.eulerSwapAddrs = {
@@ -34,7 +34,7 @@ export function getChainConfigs() {
             };
 
             chain.addresses.maglevAddrs = {
-                maglevLens: '0x6a0728d2e8E3cE22800047BDB5BbD67261813309',
+                maglevLens: '0x1F5fDa12a026729e2635978324d2f98d839859f9',
             };
         }
     }
