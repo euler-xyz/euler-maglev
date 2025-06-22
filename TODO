@@ -1,12 +1,8 @@
 RELEASE
-  * don't round-trip price/fee/concentration through Number
-    ? telosc guys: slider can't go below .3%
-
   * links to spy mode
   * bug where you need to reload when switching chains
 
-  * when hovering, show an overlay line
-
+  ? when hovering, show an overlay line
   ? fix hardcoded gas limits (foundry problem?)
   ? support manually entering reserves
 

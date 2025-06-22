@@ -77,6 +77,37 @@ function AssetChooser(props) {
 }
 
 
+function PercentInput(props) {
+    let [val, setVal] = useState(() => formatUnits(props.default * 100n, 18));
+
+    let tryParse = (v) => {
+        if (v === '') return undefined;
+        let parsed;
+        try {
+            parsed = parseUnits(v, 18) / 100n;
+            if (parsed > c1e18) parsed = undefined;
+        } catch (e) {}
+        return parsed;
+    };
+
+    let onChange = (e) => {
+        setVal(e.target.value);
+        props.onChange(tryParse(e.target.value));
+    };
+
+    let parsed = tryParse(val);
+
+    return <div className="field">
+        <label htmlFor={props.id}>{props.label}</label>
+        <div style={{ border: parsed === undefined ? '2px solid red' : '2px solid transparent', }}>
+            <div className="p-inputgroup flex-1">
+                <InputText id={props.id} value={val} onChange={onChange} />
+                <span className="p-inputgroup-addon">%</span>
+            </div>
+        </div>
+    </div>
+}
+
 
 function decodeRawParams(ctx, vault0, vault1, navMidpoint, rawParams, currReserves) {
     let parse18Scale = (x) => parseFloat(formatUnits(x, 18));
@@ -91,10 +122,10 @@ function decodeRawParams(ctx, vault0, vault1, navMidpoint, rawParams, currReserv
     let curveRight = curveMid + ctx.valueToNum(ctx.amountToValue(vault0, rawParams.equilibriumReserve0));
 
     return {
-        concentrationX: parse18Scale(rawParams.concentrationX) * 100,
-        concentrationY: parse18Scale(rawParams.concentrationY) * 100,
+        concentrationX: rawParams.concentrationX,
+        concentrationY: rawParams.concentrationY,
         price: parse18Scale(scaleDecimals(ctx, vault0, vault1, c1e18 * rawParams.priceX / rawParams.priceY)),
-        fee: parse18Scale(rawParams.fee) * 100,
+        fee: rawParams.fee,
         curveLeft,
         curveMid,
         curveRight,
@@ -331,9 +362,9 @@ export function EulerSwapViz(props) {
 
     if (!params) {
         setParams(props.initialParams ? decodeRawParams(ctx, props.vault0, props.vault1, navMidpoint, props.initialParams, props.currReserves) : {
-            concentrationX: 90,
-            concentrationY: 90,
-            fee: 0.01,
+            concentrationX: parseUnits("0.9", 18),
+            concentrationY: parseUnits("0.9", 18),
+            fee: parseUnits("0.001", 18),
             price: loadPrice(),
             curveLeft: ltv0,
             curveMid: navMidpoint,
@@ -374,24 +405,6 @@ export function EulerSwapViz(props) {
 
     let parsedPrice = LibEulerSwap.computePriceFraction(params.price, ctx.vaultDecimals(props.vault0), ctx.vaultDecimals(props.vault1));
 
-    let feeParsed;
-    try {
-        feeParsed = ctx.numTo18Scale(params.fee / 100);
-        if (feeParsed > c1e18) feeParsed = undefined;
-    } catch (e) {}
-
-    let concentrationXParsed;
-    try {
-        concentrationXParsed = ctx.numTo18Scale(params.concentrationX / 100);
-        if (concentrationXParsed > c1e18) concentrationXParsed = undefined;
-    } catch (e) {}
-
-    let concentrationYParsed;
-    try {
-        concentrationYParsed = ctx.numTo18Scale(params.concentrationY / 100);
-        if (concentrationYParsed > c1e18) concentrationYParsed = undefined;
-    } catch (e) {}
-
     let paramsRaw = {
         vault0: props.vault0,
         vault1: props.vault1,
@@ -401,10 +414,10 @@ export function EulerSwapViz(props) {
         equilibriumReserve1: ctx.valueToAmount(props.vault1, params.curveMid - params.curveLeft),
         priceX: parsedPrice[0],
         priceY: parsedPrice[1],
-        concentrationX: concentrationXParsed,
-        concentrationY: concentrationYParsed,
+        concentrationX: params.concentrationX,
+        concentrationY: params.concentrationY,
 
-        fee: feeParsed,
+        fee: params.fee,
         protocolFee: 0n,
         protocolFeeRecipient: zeroAddress,
     };
@@ -498,7 +511,7 @@ export function EulerSwapViz(props) {
                 {ctx.renderVaultAsset(props.vault1)} = {ctx.renderUnderlyingPlain(props.vault1, position.amount1)} (${ctx.renderNiceNum(position.value1, true)})
             </div>
 
-            {position.leverage && <div>
+            {position.leverage && <div className="mt-2" style={{ color: '#c22', }}>
                 {position.leverage.toFixed(3)}x {ctx.renderVaultAsset(position.value0 > 0 ? props.vault0 : props.vault1)}/{ctx.renderVaultAsset(position.value0 > 0 ? props.vault1 : props.vault0)}
             </div>}
         </>
@@ -579,40 +592,13 @@ export function EulerSwapViz(props) {
 
         {!props.viewMode && <div>
             <div className="flex align-items-center justify-content-around">
-                <div className="field">
-                    <label htmlFor="cx-input">Concentration X</label>
-                    <div>
-                        <div className="p-inputgroup flex-1">
-                            <InputText id="cx-input" value={params.concentrationX} onChange={(e) => setConcentrationX(parseFloat(e.target.value))} />
-                            <span className="p-inputgroup-addon">%</span>
-                        </div>
-                        <Slider value={params.concentrationX} onChange={(e) => setConcentrationX(e.value)} min={0} max={99.999999} step={0.01} />
-                    </div>
-                </div>
+                <PercentInput label={`Concentration X (${ctx.renderVaultAsset(props.vault1)})`} id="concentration-x-input-field" default={params.concentrationX} onChange={e => setConcentrationX(e)} />
 
-                <div className="field">
-                    <label htmlFor="cy-input">Concentration Y</label>
-                    <div>
-                        <div className="p-inputgroup flex-1">
-                            <InputText id="cy-input" value={params.concentrationY} onChange={(e) => setConcentrationY(parseFloat(e.target.value))} />
-                            <span className="p-inputgroup-addon">%</span>
-                        </div>
-                        <Slider value={params.concentrationY} onChange={(e) => setConcentrationY(e.value)} min={0} max={99.999999} step={0.01} />
-                    </div>
-                </div>
+                <PercentInput label={`Concentration Y (${ctx.renderVaultAsset(props.vault0)})`} id="concentration-y-input-field" default={params.concentrationY} onChange={e => setConcentrationY(e)} />
             </div>
 
             <div className="flex align-items-center justify-content-around">
-                <div className="field">
-                    <label htmlFor="fee-input">Fee</label>
-                    <div>
-                        <div className="p-inputgroup flex-1">
-                            <InputText id="fee-input" value={params.fee} onChange={(e) => setFee(parseFloat(e.target.value))} />
-                            <span className="p-inputgroup-addon">%</span>
-                        </div>
-                        <Slider value={params.fee} onChange={(e) => setFee(e.value)} min={0} max={3} step={0.01} />
-                    </div>
-                </div>
+                <PercentInput label="Fee" id="fee-input-field" default={params.fee} onChange={e => setFee(e)} />
 
                 <div className="field">
                     <label htmlFor="price-input">Price at Equilibrium</label>
