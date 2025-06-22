@@ -83,7 +83,7 @@ export function usePrices() {
     let myChainId = useChainId();
 
     return useQuery({
-        queryKey: ['maglev-prices'],
+        queryKey: ['maglev-prices', myChainId],
         staleTime: Infinity,
         queryFn: async () => {
             if (myChainId === 31337) return { 31337: prices31337, };
