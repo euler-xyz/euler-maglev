@@ -168,11 +168,11 @@ export class GlobalContext {
     }
 
     render18Scale(v) {
-        return parseFloat(formatUnits(v, 18));
+        return formatUnits(v, 18);
     }
 
     render18ScalePercent(v) {
-        return `${parseFloat(formatUnits(v, 18)) * 100}%`;
+        return `${formatUnits(v * 100n, 18)}%`;
     }
 
     renderNiceNum(n, plain) {

@@ -850,8 +850,8 @@ export function EulerSwapBrowse(props) {
             amount1: ctx.renderUnderlying(e.params.vault1, e.outLimit01),
 
             price: <div>
-                {ctx.render18Scale(scaleDecimals(ctx, e.params.vault0, e.params.vault1, currPrice)).toFixed(6)}<br/>
-                {ctx.render18Scale(scaleDecimals(ctx, e.params.vault1, e.params.vault0, c1e18 * c1e18 / currPrice)).toFixed(6)}
+                {ctx.render18Scale(scaleDecimals(ctx, e.params.vault0, e.params.vault1, currPrice))}<br/>
+                {ctx.render18Scale(scaleDecimals(ctx, e.params.vault1, e.params.vault0, c1e18 * c1e18 / currPrice))}
             </div>,
         };
 

@@ -17,7 +17,7 @@ const c1e18 = 10n**18n;
 
 
 function renderUtilisation(ctx, global) {
-    return `${(ctx.render18Scale(global.assets ? global.borrows * c1e18 / global.assets : 0) * 100).toFixed(3)}%`;
+    return ctx.render18ScalePercent(global.assets ? global.borrows * c1e18 / global.assets : 0);
 }
 
 
