@@ -508,7 +508,10 @@ export function EulerSwapViz(props) {
         let bounds = event.target.parentElement.getBoundingClientRect();
         let pixelX = event.clientX - bounds.left;
         let elem = curveInfoOverlay.current.getElement();
-        if (elem) elem.style.left = `${pixelX}px`;
+        if (elem) {
+            elem.style.left = '30%';
+            elem.style.width = '40%';
+        }
 
         let fundSpacePoint = pixelToFundSpace(width, domain, pixelX);
 
@@ -660,7 +663,12 @@ export function EulerSwapViz(props) {
             </Draggable>}
         </div>
         <Slider value={domain} onChange={(e) => setDomain(e.value)} min={0} max={maxDomain} step={maxDomain / 1000} />
-        <OverlayPanel ref={curveInfoOverlay}>{curveInfo}</OverlayPanel>
+
+        <OverlayPanel unstyled ref={curveInfoOverlay}>
+            <div style={{ backgroundColor: 'black', border: '2px solid green', padding: 10, }}>
+                {curveInfo}
+            </div>
+        </OverlayPanel>
 
         <div className="mt-6">
             <EulerSwapParamsTable ctx={ctx} params={paramsRaw} state={initialStateRaw} />
