@@ -648,7 +648,9 @@ export function EulerSwapViz(props) {
                 </div>
             </Draggable>}
         </div>
-        <Slider value={domain} onChange={(e) => setDomain(e.value)} min={0} max={maxDomain} step={maxDomain / 1000} />
+        <div style={{ width: '90%', marginLeft: '5%', }}>
+            <Slider value={domain} onChange={(e) => setDomain(e.value)} min={0} max={maxDomain} step={maxDomain / 1000} />
+        </div>
 
         <OverlayPanel unstyled ref={curveInfoOverlay}>
             <div style={{ backgroundColor: 'black', border: '2px solid green', padding: 10, }}>
