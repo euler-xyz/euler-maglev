@@ -501,37 +501,11 @@ export function EulerSwapViz(props) {
         return o;
     };
 
-    let renderPosition = (position) => {
-        return <>
-            <div>
-                {ctx.renderVaultAsset(props.vault0)} = {ctx.renderUnderlyingPlain(props.vault0, position.amount0)} (${ctx.renderNiceNum(position.value0, true)})
-            </div>
-
-            <div>
-                {ctx.renderVaultAsset(props.vault1)} = {ctx.renderUnderlyingPlain(props.vault1, position.amount1)} (${ctx.renderNiceNum(position.value1, true)})
-            </div>
-
-            {position.leverage && <div className="mt-2" style={{ color: '#c22', }}>
-                {position.leverage.toFixed(3)}x {ctx.renderVaultAsset(position.value0 > 0 ? props.vault0 : props.vault1)}/{ctx.renderVaultAsset(position.value0 > 0 ? props.vault1 : props.vault0)}
-            </div>}
-        </>
-    };
-
-    let handleCurveInfoMouseMove = () => {
-        let bounds = event.target.parentElement.getBoundingClientRect();
-        let pixelX = event.clientX - bounds.left;
-        let elem = curveInfoOverlay.current.getElement();
-        if (elem) {
-            elem.style.left = '30%';
-            elem.style.width = '40%';
-        }
-
-        let fundSpacePoint = pixelToFundSpace(width, domain, pixelX);
-
+    let renderPriceInfo = (fundSpacePoint) => {
         let priceInfo = priceInfoAtFundSpace(fundSpacePoint - params.curveMid);
         let position = fundsSpaceToPosition(fundSpacePoint);
 
-        setCurveInfo(<div>
+        return <div>
             <div className="mb-4">
                 Price impact: {(priceInfo.priceImpact * 100).toFixed(6)}%
             </div>
@@ -545,9 +519,37 @@ export function EulerSwapViz(props) {
             </div>
 
             <div className="mt-4">
-                {renderPosition(position)}
+                <div>
+                    {ctx.renderVaultAsset(props.vault0)} = {ctx.renderUnderlyingPlain(props.vault0, position.amount0)} (${ctx.renderNiceNum(position.value0, true)})
+                </div>
+
+                <div>
+                    {ctx.renderVaultAsset(props.vault1)} = {ctx.renderUnderlyingPlain(props.vault1, position.amount1)} (${ctx.renderNiceNum(position.value1, true)})
+                </div>
+
+                <div>
+                    NAV = ${ctx.renderNiceNum(position.value0 + position.value1, true)}
+                </div>
+
+                {position.leverage && <div className="mt-4" style={{ color: '#c22', }}>
+                    {position.leverage.toFixed(3)}x {ctx.renderVaultAsset(position.value0 > 0 ? props.vault0 : props.vault1)}/{ctx.renderVaultAsset(position.value0 > 0 ? props.vault1 : props.vault0)}
+                </div>}
             </div>
-        </div>);
+        </div>
+    };
+
+    let handleCurveInfoMouseMove = () => {
+        let bounds = event.target.parentElement.getBoundingClientRect();
+        let pixelX = event.clientX - bounds.left;
+        let elem = curveInfoOverlay.current.getElement();
+        if (elem) {
+            elem.style.left = '30%';
+            elem.style.width = '40%';
+        }
+
+        let fundSpacePoint = pixelToFundSpace(width, domain, pixelX);
+
+        setCurveInfo(renderPriceInfo(fundSpacePoint));
     };
 
     let genGradient = (size) => {
@@ -658,8 +660,14 @@ export function EulerSwapViz(props) {
             </div>
         </OverlayPanel>
 
-        <div className="mt-6">
-            <EulerSwapParamsTable ctx={ctx} params={paramsRaw} state={initialStateRaw} />
+        <div className="mt-6 flex justify-content-evenly">
+            <div style={{ backgroundColor: 'black', border: '2px solid green', padding: 10, width: '25%', }}>
+                <div className="mb-3" style={{ fontSize: '150%', }}>Current position</div>
+                {renderPriceInfo(navMidpoint)}
+            </div>
+            <div className="flex-grow-1 pl-4 pr-4">
+                <EulerSwapParamsTable ctx={ctx} params={paramsRaw} state={initialStateRaw} />
+            </div>
         </div>
 
         {!props.viewMode && <div className="mt-6 flex align-items-center justify-content-center">
