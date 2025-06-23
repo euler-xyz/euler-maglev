@@ -838,7 +838,7 @@ export function EulerSwapBrowse(props) {
         let currPrice = LibEulerSwap.getCurrentPrice(e.params, e.reserve0, e.reserve1);
 
         let row = {
-            account: <Link to={`/euler-swap/${e.params.eulerAccount}`}>{e.params.eulerAccount.substr(0,8)}...</Link>,
+            account: <Link to={`/euler-swap/${e.params.eulerAccount}`}>{e.params.eulerAccount.substr(0,8)}...{e.params.eulerAccount.substr(-2)}</Link>,
             vault0: ctx.renderVaultName(e.params.vault0),
             vault1: ctx.renderVaultName(e.params.vault1),
 
