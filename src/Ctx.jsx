@@ -71,7 +71,7 @@ export class GlobalContext {
         let v = {};
 
         for (let vaultAddr of Object.keys(vaultAddrs)) {
-            if (this.labels.vaults[vaultAddr] || this.args.extraVaultAddrs.vaults[vaultAddr]) continue;
+            if (this.labels.vaults[vaultAddr] || this.args.extraVaultAddrs[vaultAddr]) continue;
             v[vaultAddr] = true;
         }
 

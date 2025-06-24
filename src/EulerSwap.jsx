@@ -813,6 +813,15 @@ export function EulerSwapBrowse(props) {
 
     if (!eulerSwapData || !ctx.ready) return "Loading...";
 
+    let seenVaults = {};
+
+    for (let i = 0; i < eulerSwapData.length; i++) {
+        seenVaults[eulerSwapData[i].params.vault0] = true;
+        seenVaults[eulerSwapData[i].params.vault1] = true;
+    }
+
+    if (!ctx.addExtraVaults(seenVaults)) return 'Loading...';
+
     let swapReady = slip !== undefined && (!ctx.connected || allowance !== undefined);
 
     let rows = [];
@@ -832,13 +841,8 @@ export function EulerSwapBrowse(props) {
         await EulerSwapUtils.doApprove(ctx, assetAInfo?.addr, ctx.currChain?.addresses.eulerSwapAddrs.eulerSwapPeriphery, approveAmount);
     };
 
-    let seenVaults = {};
-
     for (let i = 0; i < eulerSwapData.length; i++) {
         let e = eulerSwapData[i];
-
-        seenVaults[e.params.vault0] = true;
-        seenVaults[e.params.vault1] = true;
 
         if (assetAInfo && e.asset0 !== assetAInfo.addr && e.asset1 !== assetAInfo.addr) continue;
         if (assetBInfo && e.asset0 !== assetBInfo.addr && e.asset1 !== assetBInfo.addr) continue;
@@ -881,8 +885,6 @@ export function EulerSwapBrowse(props) {
 
         rows.push(row);
     }
-
-    if (!ctx.addExtraVaults(seenVaults)) return 'Loading...';
 
     if (eulerSwapQuotes) {
         rows = rows.filter(row => typeof(row.q) === 'bigint');
