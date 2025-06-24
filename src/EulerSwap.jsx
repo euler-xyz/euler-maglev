@@ -27,6 +27,11 @@ import * as LibEulerSwap from "../lib/euler-swap-jslib/src/LibEulerSwap";
 const c1e18 = 10n**18n;
 
 
+function isBig(n) {
+    return typeof(n) === 'bigint';
+}
+
+
 function VaultChooser(props) {
     let [value, setValue] = useState('');
     let [items, setItems] = useState([]);
@@ -287,6 +292,9 @@ export function EulerSwapViz(props) {
     }
 
 
+    if (!isBig(v0status.value) || !isBig(v1status.value)) {
+        return <h2 style={{ color: 'red', }}>No pricing available.</h2>;
+    }
 
     let nav = v0status.value + v1status.value - v0status.debtValue - v1status.debtValue;
     let navNum = ctx.valueToNum(nav);
@@ -577,7 +585,7 @@ export function EulerSwapViz(props) {
     function renderRawParams() {
         let o = { ...paramsRaw, };
         for (let k of Object.keys(o)) {
-            if (typeof(o[k]) === 'bigint') o[k] = o[k].toString();
+            if (isBig(o[k])) o[k] = o[k].toString();
         }
 
         let str = JSON.stringify(o, ' ', 4);
@@ -887,7 +895,7 @@ export function EulerSwapBrowse(props) {
     }
 
     if (eulerSwapQuotes) {
-        rows = rows.filter(row => typeof(row.q) === 'bigint');
+        rows = rows.filter(row => isBig(row.q));
     }
 
     let bigintSign = n => n < 0n ? -1 : n > 0n ? 1 : 0;
