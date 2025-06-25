@@ -271,7 +271,7 @@ export function EulerSwapViz(props) {
     let { data: vaultsPersonal } = Lens.useVaultsPersonalInfo(props.account, allVaults);
     let { data: ltvMatrix } = Lens.useLTVMatrix(allVaults, false);
 
-    if (!ctx.ready || !enteredMarkets || !vaultsPersonal || !ltvMatrix) return 'Loading...';
+    if (!ctx.ready || !enteredMarkets || !vaultsPersonal || !ltvMatrix) return ctx.loading();
     if (!ctx.addExtraVaults(seenVaults)) return 'Loading...';
 
 
@@ -727,7 +727,7 @@ export function EulerSwapPanel(props) {
     let [uiState, setUiState] = useState('default');
     let [vaults, setVaults] = useState();
 
-    if (!myEulerSwap || !ctx.ready) return "Loading...";
+    if (!ctx.ready || !myEulerSwap) return ctx.loading();
 
     let existing = myEulerSwap.addr === zeroAddress ? undefined : myEulerSwap.addr;
     let currReserves = { reserve0: myEulerSwap.reserve0, reserve1: myEulerSwap.reserve1, };
@@ -819,7 +819,7 @@ export function EulerSwapBrowse(props) {
 
     let { data: eulerSwapQuotes } = Lens.useEulerSwapQuoteMulti(ctx, eulerSwapData && eulerSwapData.map(e => e.addr), assetA, assetB, swapAmountParsed, exactIn);
 
-    if (!eulerSwapData || !ctx.ready) return "Loading...";
+    if (!eulerSwapData || !ctx.ready) return ctx.loading();
 
     let seenVaults = {};
 
@@ -975,7 +975,7 @@ export function EulerSwapShowInstance(props) {
     let params = useParams();
     let { data: myEulerSwap, isPending: pending1 } = Lens.useMyEulerSwap(params.account);
 
-    if (!ctx.ready || pending1) return "Loading...";
+    if (!ctx.ready || pending1) return ctx.loading();
     let existing = myEulerSwap && myEulerSwap.addr !== zeroAddress ? myEulerSwap.addr : undefined;
 
     return <div>

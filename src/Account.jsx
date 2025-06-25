@@ -13,7 +13,7 @@ import { EulerSwapPanel } from "./EulerSwap";
 export function AccountPanel(props) {
     let ctx = props.ctx;
 
-    if (!ctx.ready) return "Loading...";
+    if (!ctx.ready) return ctx.loading();
     if (!ctx.connected) return "Please connect your wallet.";
 
     let tabs = [];

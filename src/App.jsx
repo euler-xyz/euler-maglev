@@ -1,12 +1,14 @@
 import { useState } from 'react';
 
 import { getDefaultConfig, RainbowKitProvider, darkTheme } from '@rainbow-me/rainbowkit';
-import { WagmiProvider } from 'wagmi';
+import { WagmiProvider, useChainId, useSwitchChain } from 'wagmi';
 import { foundry, } from 'wagmi/chains';
 import { QueryClientProvider, QueryClient, } from "@tanstack/react-query";
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { Route, Routes, Link, NavLink } from "react-router-dom";
 import { Tooltip as ReactTooltip } from 'react-tooltip';
+
+import { Dropdown } from 'primereact/dropdown';
 
 import { useGlobalContext } from "./Ctx";
 import { getWagmiChainConfigs } from './ChainConfig';
@@ -27,7 +29,10 @@ const queryClient = new QueryClient();
 
 
 
-function Header() {
+function Header(props) {
+    let { chains, switchChain } = useSwitchChain();
+    let myChainId = useChainId();
+
     return <div className="header-bar">
         <Link to={`/`}>
             <div className="logo">
@@ -35,7 +40,12 @@ function Header() {
                 <img style={{ marginLeft: 20, height: 75, }} src="/maglev.png" />
             </div>
         </Link>
-        <div className="connectButtonContainer"><ConnectButton/></div>
+
+        <div className="flex align-items-center">
+            {!props.ctx.connected && <Dropdown value={myChainId} onChange={e => switchChain({ chainId: e.value, })} options={chains} optionLabel="name" optionValue="id" />}
+
+            <div className="ml-2 connectButtonContainer"><ConnectButton/></div>
+        </div>
     </div>
 }
 
@@ -51,7 +61,7 @@ function Main() {
     });
 
     return <div className="main">
-        <Header />
+        <Header ctx={ctx} />
 
         <div className="header-links">
             <NavLink to={`/`}>Vaults</NavLink>

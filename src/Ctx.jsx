@@ -57,14 +57,22 @@ export class GlobalContext {
 
         this.chainConfigs = {};
 
-        //console.log(!!this.labels, !!this.prices, !!this.vaultsStatic, !!this.vaultsGlobal, !!this.vaultsPersonal);
-        this.ready = this.labels && this.prices && this.vaultsStatic && this.vaultsGlobal && (!this.connected || this.vaultsPersonal);
+        this.maglevSupportsChain = !!currChain?.addresses.maglevAddrs;
+
+        //console.log(!!this.maglevSupportsChain, !!this.labels, !!this.prices, !!this.vaultsStatic, !!this.vaultsGlobal, !!this.vaultsPersonal);
+        this.ready = this.maglevSupportsChain && this.labels && this.prices && this.vaultsStatic && this.vaultsGlobal && (!this.connected || this.vaultsPersonal);
 
         if (this.ready) {
             this._setupChainConfigs();
             this._collectAssets();
             if (this.connected) this._aggregateSubAccounts();
         }
+    }
+
+    loading() {
+        if (!this.maglevSupportsChain) return "Maglev not currently supported on this chain.";
+
+        return "Loading...";
     }
 
     addExtraVaults(vaultAddrs) {

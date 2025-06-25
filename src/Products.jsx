@@ -17,7 +17,7 @@ function accumulate(accum, addend) {
 export function ProductsList(props) {
     let ctx = props.ctx;
 
-    if (!ctx.ready) return "Loading...";
+    if (!ctx.ready) return ctx.loading();
 
     let rows = [];
 
@@ -61,7 +61,7 @@ export function ProductInfo(props) {
     let [leverageMode, setLeverageMode] = useState(false);
     let { data: matrix, isPending: pending1 } = Lens.useLTVMatrix(vaults, liquidationLtv);
 
-    if (!ctx.ready || pending1) return "Loading...";
+    if (!ctx.ready || pending1) return ctx.loading();
 
     let rows = [];
 

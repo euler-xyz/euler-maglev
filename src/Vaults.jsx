@@ -28,7 +28,7 @@ export function VaultList(props) {
 
     let ctx = props.ctx;
 
-    if (!ctx.ready) return "Loading...";
+    if (!ctx.ready) return ctx.loading();
 
     let rows = [];
 
@@ -149,7 +149,7 @@ export function VaultInfo(props) {
 
     let { data: vaultsDetailed } = Lens.useVaultsDetailed([params.vault]);
 
-    if (!ctx.ready || !vaultsDetailed) return 'Loading...';
+    if (!ctx.ready || !vaultsDetailed) return ctx.loading();
     if (!ctx.addExtraVaults({ [params.vault]: true, })) return 'Loading...';
 
     let vaultGlobal = ctx.vaultsGlobal[params.vault];
