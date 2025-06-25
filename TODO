@@ -1,15 +1,12 @@
-RELEASE
+NEXT
+  ! test graceful degrade when pricing API not available
   * links to spy mode
-  * bug where you need to reload when switching chains
-
   ? when hovering, show an overlay line
   ? fix hardcoded gas limits (foundry problem?)
   ? support manually entering reserves
 
 TODO
-  * chain switcher when you're not connected
   * each sub-account tab should get its own URL route
   * spy mode
   * figure out better solution for RPC URLs
   * show net APY, Return on Equity, native yield (?)
-  * gracefully degrade when pricing API not present
