@@ -855,7 +855,10 @@ export function EulerSwapBrowse(props) {
         if (assetAInfo && e.asset0 !== assetAInfo.addr && e.asset1 !== assetAInfo.addr) continue;
         if (assetBInfo && e.asset0 !== assetBInfo.addr && e.asset1 !== assetBInfo.addr) continue;
 
-        let currPrice = LibEulerSwap.getCurrentPrice(e.params, e.reserve0, e.reserve1);
+        let currPrice;
+        try {
+            currPrice = LibEulerSwap.getCurrentPrice(e.params, e.reserve0, e.reserve1);
+        } catch(e) {}
 
         let row = {
             account: <Link to={`/euler-swap/${e.params.eulerAccount}`}>{e.params.eulerAccount.substr(0,8)}...{e.params.eulerAccount.substr(-2)}</Link>,
@@ -865,10 +868,10 @@ export function EulerSwapBrowse(props) {
             amount0: ctx.renderUnderlying(e.params.vault0, e.outLimit10),
             amount1: ctx.renderUnderlying(e.params.vault1, e.outLimit01),
 
-            price: <div>
+            price: currPrice !== undefined ? <div>
                 {ctx.render18Scale(scaleDecimals(ctx, e.params.vault0, e.params.vault1, currPrice))}<br/>
                 {ctx.render18Scale(scaleDecimals(ctx, e.params.vault1, e.params.vault0, c1e18 * c1e18 / currPrice))}
-            </div>,
+            </div> : <span style={{ color: 'red', }}>?</span>,
         };
 
         if (eulerSwapQuotes && eulerSwapQuotes[i] && swapReady) {
