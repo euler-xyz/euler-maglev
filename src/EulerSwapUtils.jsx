@@ -94,6 +94,7 @@ export async function uninstallEulerSwap(ctx) {
     let batch = [];
 
     if (previousOperator !== zeroAddress) {
+        // FIXME: case where operator was already disabled
         batch.push({
             targetContract: ctx.currChain.addresses.coreAddrs.evc,
             onBehalfOfAccount: zeroAddress,
