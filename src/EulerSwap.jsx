@@ -19,6 +19,7 @@ import { Column } from 'primereact/column';
 import { OverlayPanel } from 'primereact/overlaypanel';
 import { Dialog } from 'primereact/dialog';
 import { InputSwitch } from 'primereact/inputswitch';
+import { RadioButton } from 'primereact/radiobutton';
 
 import * as Lens from "./Lens";
 import * as EulerSwapUtils from "./EulerSwapUtils";
@@ -797,6 +798,7 @@ export function EulerSwapBrowse(props) {
     let [swapAmount, setSwapAmount] = useState('');
     let [slippage, setSlippage] = useState(0);
     let [exactIn, setExactIn] = useState(true);
+    let [sortBy, setSortBy] = useState('liquidity');
 
     let { data: eulerSwapData } = Lens.useEulerSwapData();
 
@@ -873,11 +875,22 @@ export function EulerSwapBrowse(props) {
             amount0: ctx.renderUnderlying(e.params.vault0, e.outLimit10),
             amount1: ctx.renderUnderlying(e.params.vault1, e.outLimit01),
 
+            liquidity: 0n,
+
             price: currPrice !== undefined ? <div>
                 {ctx.render18Scale(scaleDecimals(ctx, e.params.vault0, e.params.vault1, currPrice))}<br/>
                 {ctx.render18Scale(scaleDecimals(ctx, e.params.vault1, e.params.vault0, c1e18 * c1e18 / currPrice))}
             </div> : <span style={{ color: 'red', }}>?</span>,
         };
+
+        {
+            let liq = ctx.amountToValue(e.params.vault0, e.outLimit10);
+            if (isBig(liq)) row.liquidity += liq;
+        }
+        {
+            let liq = ctx.amountToValue(e.params.vault1, e.outLimit01);
+            if (isBig(liq)) row.liquidity += liq;
+        }
 
         if (eulerSwapQuotes && eulerSwapQuotes[i] && swapReady) {
             let quote;
@@ -909,6 +922,11 @@ export function EulerSwapBrowse(props) {
     let bigintSign = n => n < 0n ? -1 : n > 0n ? 1 : 0;
     if (exactIn) rows.sort((a,b) => bigintSign(b.q - a.q));
     else rows.sort((a,b) => bigintSign(a.q - b.q));
+
+    if (!eulerSwapQuotes && sortBy === 'liquidity') {
+        rows.sort((a,b) => bigintSign(b.liquidity - a.liquidity));
+    }
+        console.log(rows[0]);
 
     let amountInput = () => {
         return <div className="field">
@@ -960,6 +978,20 @@ export function EulerSwapBrowse(props) {
                 <div className="col">
                     {!exactIn ? amountInput() : slippageInput()}
                 </div>
+            </div>
+        </div>
+
+        <div className="flex flex-wrap gap-3 mt-2 mb-3">
+            Sort:
+
+            <div className="flex align-items-center">
+                <RadioButton inputId="sort-by-created" name="created" value="created" onChange={(e) => setSortBy(e.value)} checked={sortBy === 'created'} />
+                <label htmlFor="sort-by-created" className="ml-2">Created</label>
+            </div>
+
+            <div className="flex align-items-center">
+                <RadioButton inputId="sort-by-liquidity" name="liquidity" value="liquidity" onChange={(e) => setSortBy(e.value)} checked={sortBy === 'liquidity'} />
+                <label htmlFor="sort-by-liquidity" className="ml-2">Liquidity</label>
             </div>
         </div>
 
