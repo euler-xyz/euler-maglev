@@ -31,7 +31,7 @@ export class GlobalContext {
         let { data: prices } = Lens.usePrices();
 
         let vaultAddrsLabels = labels ? Object.keys(labels.vaults) : undefined;
-        let vaultAddrsExtra = Object.keys(this.args.extraVaultAddrs);
+        let vaultAddrsExtra = Object.keys(this.args.extraVaultAddrs[currChain?.chainId] || {});
         let mySubaccountMask = (1n << BigInt(this.args.numSubAccounts)) - 1n;
 
         let { data: vaultsStaticLabels } = Lens.useVaultsStaticInfo(vaultAddrsLabels);
@@ -78,13 +78,19 @@ export class GlobalContext {
     addExtraVaults(vaultAddrs) {
         let v = {};
 
+        let extraVaultAddrs = this.args.extraVaultAddrs[this.currChain.chainId] || {};
+
         for (let vaultAddr of Object.keys(vaultAddrs)) {
-            if (this.labels.vaults[vaultAddr] || this.args.extraVaultAddrs[vaultAddr]) continue;
+            if (this.labels.vaults[vaultAddr] || extraVaultAddrs[vaultAddr]) continue;
             v[vaultAddr] = true;
         }
 
         if (Object.keys(v).length) {
-            setTimeout(() => this.args.setExtraVaultAddrs({ ...this.args.extraVaultAddrs.vaults, ...v, }), 0);
+            setTimeout(() => this.args.setExtraVaultAddrs(
+            {
+                ...this.args.extraVaultAddrs,
+                [this.currChain.chainId]: { ...extraVaultAddrs, ...v, },
+            }), 0);
             return false;
         }
 
