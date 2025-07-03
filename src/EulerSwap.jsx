@@ -600,6 +600,11 @@ export function EulerSwapViz(props) {
     return <div>
         <Tooltip target=".eulerswap-tooltip" />
 
+        {props.viewMode && <div>
+            <div className="text-xl mt-4">Account: <code>{props.account}</code> - {ctx.etherscanAddress(props.account, 'etherscan')}</div>
+            <div className="text-xl mt-2">Operator: <code>{props.existingOperator}</code> - {ctx.etherscanAddress(props.existingOperator, 'etherscan')}</div>
+        </div>}
+
         {!props.viewMode && <div>
             <div className="flex align-items-center justify-content-around">
                 <PercentInput label={`Concentration X (${ctx.renderVaultAsset(props.vault1)})`} id="concentration-x-input-field" default={params.concentrationX} onChange={e => setConcentrationX(e)} />
@@ -764,7 +769,7 @@ export function EulerSwapPanel(props) {
         </div>
 
         {uiState === 'default' && existing && <div style={{ width: '100%', }}>
-            <EulerSwapViz viewMode ctx={ctx} account={myEulerSwap.params.eulerAccount} vault0={myEulerSwap.params.vault0} vault1={myEulerSwap.params.vault1} initialParams={myEulerSwap.params} currReserves={currReserves} />
+            <EulerSwapViz viewMode ctx={ctx} account={myEulerSwap.params.eulerAccount} existingOperator={existing} vault0={myEulerSwap.params.vault0} vault1={myEulerSwap.params.vault1} initialParams={myEulerSwap.params} currReserves={currReserves} />
         </div>}
 
         {uiState === 'new-choose-vaults' && <VaultPairChooser ctx={ctx} onChoose={onChooseVaults} />}
@@ -982,16 +987,10 @@ export function EulerSwapShowInstance(props) {
     let existing = myEulerSwap && myEulerSwap.addr !== zeroAddress ? myEulerSwap.addr : undefined;
 
     return <div>
-        <div className="text-xl">
-            Account: <code>{params.account}</code> - {ctx.etherscanAddress(params.account, 'etherscan')}
-        </div>
-
         {!existing && <div className="mt-4">No operator found.</div>}
 
         {existing && <div style={{ width: '100%', }}>
-            <div className="text-xl mt-2">Operator: <code>{myEulerSwap.addr}</code> - {ctx.etherscanAddress(myEulerSwap.addr, 'etherscan')}</div>
-
-            <EulerSwapViz viewMode ctx={ctx} account={myEulerSwap.params.eulerAccount} vault0={myEulerSwap.params.vault0} vault1={myEulerSwap.params.vault1} initialParams={myEulerSwap.params} currReserves={{ reserve0: myEulerSwap.reserve0, reserve1: myEulerSwap.reserve1, }} />
+            <EulerSwapViz viewMode ctx={ctx} account={myEulerSwap.params.eulerAccount} existingOperator={myEulerSwap.addr} vault0={myEulerSwap.params.vault0} vault1={myEulerSwap.params.vault1} initialParams={myEulerSwap.params} currReserves={{ reserve0: myEulerSwap.reserve0, reserve1: myEulerSwap.reserve1, }} />
         </div>}
     </div>
 }
