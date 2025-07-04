@@ -27,6 +27,15 @@ export function getChainConfigs() {
             chain.addresses.maglevAddrs = {
                 maglevLens: '0xb4876B74638F417Fa620B6169cdf7690351441fE',
             };
+        } else if (chain.chainId === 56) {
+            chain.addresses.eulerSwapAddrs = {
+                eulerSwapFactory: '0x3e378e5E339DF5e0Da32964F9EEC2CDb90D28Cc7',
+                eulerSwapPeriphery: '0xa8826Bb29f875Db4c4b482463961776390774525',
+            };
+
+            chain.addresses.maglevAddrs = {
+                maglevLens: '0x487554e593fD6Ac15F6D0ED3C3D84A599fdCD704',
+            };
         } else if (chain.chainId === 130) {
             chain.addresses.eulerSwapAddrs = {
                 eulerSwapFactory: '0x45b146BC07c9985589B52df651310e75C6BE066A',
@@ -57,6 +66,8 @@ export function getWagmiChainConfigs() {
 
         if (chain.id === 1) {
             chain.rpcUrls.default.http[0] = 'https://lb.drpc.org/ogrpc?network=ethereum&dkey=AqqUmy43EUMFg-KecrSxzlod45SCPT4R8I63FuhS1q00';
+        } else if (chain.id === 56) {
+            chain.rpcUrls.default.http[0] = 'https://lb.drpc.org/ogrpc?network=bsc&dkey=AqqUmy43EUMFg-KecrSxzlod45SCPT4R8I63FuhS1q00';
         } else if (chain.id === 130) {
             chain.rpcUrls.default.http[0] = 'https://lb.drpc.org/ogrpc?network=unichain&dkey=AqqUmy43EUMFg-KecrSxzlod45SCPT4R8I63FuhS1q00';
         }
