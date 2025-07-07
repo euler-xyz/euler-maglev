@@ -64,14 +64,16 @@ function Main() {
         <Header ctx={ctx} />
 
         <div className="header-links">
-            <NavLink to={`/`}>Vaults</NavLink>
+            <NavLink to={`/euler-swap/`}>Swap</NavLink>
+            <NavLink to={`/vaults/`}>Vaults</NavLink>
             <NavLink to={`/products/`}>Products</NavLink>
             <NavLink to={`/account/`}>Account</NavLink>
-            <NavLink to={`/euler-swap/`}>Swap</NavLink>
         </div>
 
         <Routes>
-            <Route path="/" element={<VaultList ctx={ctx} />} />
+            <Route path="/" element={<EulerSwapBrowse ctx={ctx} />} />
+
+            <Route path="/vaults/" element={<VaultList ctx={ctx} />} />
             <Route path="/vault/:vault" element={<VaultInfo ctx={ctx} />} />
 
             <Route path="/products/" element={<ProductsList ctx={ctx} />} />
