@@ -300,7 +300,7 @@ export function EulerSwapViz(props) {
     let nav = v0status.value + v1status.value - v0status.debtValue - v1status.debtValue;
     let navNum = ctx.valueToNum(nav);
 
-    let ltv0, ltv1;
+    let limit0, limit1;
 
     if (debtVaultIndex !== undefined && debtVaultIndex !== v0Index && debtVaultIndex !== v1Index) {
         // Special case where the liability vault is not one of the configured vaults
@@ -316,15 +316,15 @@ export function EulerSwapViz(props) {
         let split = (netDebt - adj1) / (adj0 - adj1);
 
         if (navNum * ltvMatrix[v0Index][debtVaultIndex] > netDebt) {
-            ltv0 = -navNum/2;
+            limit0 = -navNum/2;
         } else {
-            ltv0 = (1 - split) * -navNum/2;
+            limit0 = (1 - split) * -navNum/2;
         }
 
         if (navNum * ltvMatrix[v1Index][debtVaultIndex] > netDebt) {
-            ltv1 = navNum/2;
+            limit1 = navNum/2;
         } else {
-            ltv1 = split * navNum/2;
+            limit1 = split * navNum/2;
         }
     } else {
         // Normal case where one of the configured vaults is the liability
@@ -338,13 +338,13 @@ export function EulerSwapViz(props) {
         }
         let ltvPair = [ltvMatrix[v1Index][v0Index], ltvMatrix[v0Index][v1Index]];
 
-        ltv0 = -(navNum + extracollateral0) / (1 - ltvPair[1]);
-        ltv1 = (navNum + extracollateral1) / (1 - ltvPair[0]);
+        limit0 = -(navNum + extracollateral0) / (1 - ltvPair[1]);
+        limit1 = (navNum + extracollateral1) / (1 - ltvPair[0]);
     }
 
 
 
-    let maxDomain = 1.05 * Math.max(Math.abs(ltv0), Math.abs(ltv1));
+    let maxDomain = 1.05 * Math.max(Math.abs(limit0), Math.abs(limit1));
     if (domain === undefined) setDomain(props.initialDomain || maxDomain);
 
     let navMidpoint;
@@ -375,9 +375,9 @@ export function EulerSwapViz(props) {
             concentrationY: parseUnits("0.9", 18),
             fee: parseUnits("0.001", 18),
             price: loadPrice(),
-            curveLeft: ltv0,
+            curveLeft: limit0,
             curveMid: navMidpoint,
-            curveRight: ltv1,
+            curveRight: limit1,
         });
         return;
     }
@@ -387,8 +387,8 @@ export function EulerSwapViz(props) {
     let setFee = (v) => setParams({ ...params, fee: v });
     let setPrice = (v) => setParams({ ...params, price: v });
 
-    let ltv0Pixel = fundSpaceToPixel(width, domain, ltv0);
-    let ltv1Pixel = fundSpaceToPixel(width, domain, ltv1);
+    let limit0Pixel = fundSpaceToPixel(width, domain, limit0);
+    let limit1Pixel = fundSpaceToPixel(width, domain, limit1);
     let curveLeftPixel = fundSpaceToPixel(width, domain, params.curveLeft);
     let curveMidPixel = fundSpaceToPixel(width, domain, params.curveMid);
     let curveRightPixel = fundSpaceToPixel(width, domain, params.curveRight);
@@ -629,8 +629,8 @@ export function EulerSwapViz(props) {
 
 
         <div className="flex mt-6" ref={observe} style={{ marginTop: 10, width: '100%', position: 'relative', overflowX: 'clip', height: 140 }}>
-            <FundsSpace width={width} domain={domain} color="white" style={{ borderLeft: '5px dashed crimson', }} from={ltv0} to={ltv0} mark height={90} top={-30} tooltip={`Max ${ctx.renderVaultAsset(props.vault0)}/${ctx.renderVaultAsset(props.vault1)} position`} />
-            <FundsSpace width={width} domain={domain} color="white" style={{ borderRight: '5px dashed crimson', }} from={ltv1} to={ltv1} mark height={90} top={-30} tooltip={`Max ${ctx.renderVaultAsset(props.vault1)}/${ctx.renderVaultAsset(props.vault0)} position`} />
+            <FundsSpace width={width} domain={domain} color="white" style={{ borderLeft: '5px dashed crimson', }} from={limit0} to={limit0} mark height={90} top={-30} tooltip={`Max ${ctx.renderVaultAsset(props.vault0)}/${ctx.renderVaultAsset(props.vault1)} position`} />
+            <FundsSpace width={width} domain={domain} color="white" style={{ borderRight: '5px dashed crimson', }} from={limit1} to={limit1} mark height={90} top={-30} tooltip={`Max ${ctx.renderVaultAsset(props.vault1)}/${ctx.renderVaultAsset(props.vault0)} position`} />
 
             {genVaultDisp(props.vault0, v0status, -1)}
             {genVaultDisp(props.vault1, v1status, 1)}
@@ -646,7 +646,7 @@ export function EulerSwapViz(props) {
 
             <FundsSpace width={width} domain={domain} from={params.curveMid} to={params.curveMid} height={60} top={30} mark style={{ border: '3px dotted #7ab5ff',}} tooltip="Curve Equilibrium" />
 
-            {!props.viewMode && <Draggable nodeRef={leftNodeRef} axis="x" position={{ x: curveLeftPixel, y: 0, }} bounds={{ left: ltv0Pixel, right: Math.min(curveMidPixel, navMidpointPixel), }} onDrag={onDragLeft}>
+            {!props.viewMode && <Draggable nodeRef={leftNodeRef} axis="x" position={{ x: curveLeftPixel, y: 0, }} bounds={{ left: limit0Pixel, right: Math.min(curveMidPixel, navMidpointPixel), }} onDrag={onDragLeft}>
                 <div ref={leftNodeRef} style={{ marginTop: 62.5, fontSize: 20, marginLeft: -20, }}>
                     <span style={{ backgroundColor: 'blue', borderRadius: 5 }}>&#x21c6;</span>
                 </div>
@@ -658,7 +658,7 @@ export function EulerSwapViz(props) {
                 </div>
             </Draggable>}
 
-            {!props.viewMode && <Draggable nodeRef={rightNodeRef} axis="x" position={{ x: curveRightPixel, y: 0, }} bounds={{ left: Math.max(curveMidPixel, navMidpointPixel), right: ltv1Pixel, }} onDrag={onDragRight}>
+            {!props.viewMode && <Draggable nodeRef={rightNodeRef} axis="x" position={{ x: curveRightPixel, y: 0, }} bounds={{ left: Math.max(curveMidPixel, navMidpointPixel), right: limit1Pixel, }} onDrag={onDragRight}>
                 <div ref={rightNodeRef} style={{ marginTop: 62.5, fontSize: 20, }}>
                     <span style={{ backgroundColor: 'blue', borderRadius: 5 }}>&#x21c6;</span>
                 </div>
