@@ -6,6 +6,7 @@ import fromExponential from 'from-exponential';
 
 import * as Lens from "./Lens";
 import * as Utils from './Utils';
+import { ContractErrorMessage } from "./ErrorBoundary";
 
 
 export class GlobalContext {
@@ -26,30 +27,48 @@ export class GlobalContext {
         this.walletClient = walletClient;
         this.queryClient = useQueryClient();
 
-        let { data: currChain } = Lens.useEulerChain();
-        let { data: labels } = Lens.useLabels();
-        let { data: prices } = Lens.usePrices();
+        let { data: currChain, error: currChainError, isError: currChainIsError } = Lens.useEulerChain();
+        let { data: labels, error: labelsError, isError: labelsIsError } = Lens.useLabels();
+        let { data: prices, error: pricesError, isError: pricesIsError } = Lens.usePrices();
 
         let vaultAddrsLabels = labels ? Object.keys(labels.vaults) : undefined;
         let vaultAddrsExtra = Object.keys(this.args.extraVaultAddrs[currChain?.chainId] || {});
         let mySubaccountMask = (1n << BigInt(this.args.numSubAccounts)) - 1n;
 
-        let { data: vaultsStaticLabels } = Lens.useVaultsStaticInfo(vaultAddrsLabels);
-        let { data: vaultsStaticExtra } = Lens.useVaultsStaticInfo(vaultAddrsExtra);
+        let { data: vaultsStaticLabels, error: vaultsStaticLabelsError, isError: vaultsStaticLabelsIsError } = Lens.useVaultsStaticInfo(vaultAddrsLabels);
+        let { data: vaultsStaticExtra, error: vaultsStaticExtraError, isError: vaultsStaticExtraIsError } = Lens.useVaultsStaticInfo(vaultAddrsExtra);
         if (vaultsStaticLabels && vaultsStaticExtra) this.vaultsStatic = { ...vaultsStaticLabels, ... vaultsStaticExtra, };
 
-        let { data: vaultsGlobalLabels } = Lens.useVaultsGlobal(vaultAddrsLabels);
-        let { data: vaultsGlobalExtra } = Lens.useVaultsGlobal(vaultAddrsExtra);
+        let { data: vaultsGlobalLabels, error: vaultsGlobalLabelsError, isError: vaultsGlobalLabelsIsError } = Lens.useVaultsGlobal(vaultAddrsLabels);
+        let { data: vaultsGlobalExtra, error: vaultsGlobalExtraError, isError: vaultsGlobalExtraIsError } = Lens.useVaultsGlobal(vaultAddrsExtra);
         if (vaultsGlobalLabels && vaultsGlobalExtra) this.vaultsGlobal = { ...vaultsGlobalLabels, ...vaultsGlobalExtra, };
 
-        let { data: vaultsPersonalLabels } = Lens.useVaultsPersonalInfoMulti(this.myPrimaryAddr, mySubaccountMask, vaultAddrsLabels);
-        let { data: vaultsPersonalExtra } = Lens.useVaultsPersonalInfoMulti(this.myPrimaryAddr, mySubaccountMask, vaultAddrsExtra);
+        let { data: vaultsPersonalLabels, error: vaultsPersonalLabelsError, isError: vaultsPersonalLabelsIsError } = Lens.useVaultsPersonalInfoMulti(this.myPrimaryAddr, mySubaccountMask, vaultAddrsLabels);
+        let { data: vaultsPersonalExtra, error: vaultsPersonalExtraError, isError: vaultsPersonalExtraIsError } = Lens.useVaultsPersonalInfoMulti(this.myPrimaryAddr, mySubaccountMask, vaultAddrsExtra);
         if (vaultsPersonalLabels && vaultsPersonalExtra) {
             this.vaultsPersonal = {};
             for (let k of Object.keys(vaultsPersonalLabels)) {
                 this.vaultsPersonal[k] = { ...vaultsPersonalLabels[k], ...vaultsPersonalExtra[k], };
             }
         }
+
+        // Store error states for later use
+        this.hasDataErrors = currChainIsError || labelsIsError || pricesIsError || 
+                            vaultsStaticLabelsIsError || vaultsStaticExtraIsError ||
+                            vaultsGlobalLabelsIsError || vaultsGlobalExtraIsError ||
+                            (this.connected && (vaultsPersonalLabelsIsError || vaultsPersonalExtraIsError));
+        
+        this.dataErrors = {
+            currChain: currChainError,
+            labels: labelsError,
+            prices: pricesError,
+            vaultsStaticLabels: vaultsStaticLabelsError,
+            vaultsStaticExtra: vaultsStaticExtraError,
+            vaultsGlobalLabels: vaultsGlobalLabelsError,
+            vaultsGlobalExtra: vaultsGlobalExtraError,
+            vaultsPersonalLabels: vaultsPersonalLabelsError,
+            vaultsPersonalExtra: vaultsPersonalExtraError,
+        };
 
         this.currChain = currChain;
         this.labels = labels;
@@ -58,6 +77,7 @@ export class GlobalContext {
         this.chainConfigs = {};
 
         this.maglevSupportsChain = !!currChain?.addresses.maglevAddrs;
+        this.eulerSwapSupportsChain = !!currChain?.addresses.eulerSwapAddrs;
 
         //console.log(!!this.maglevSupportsChain, !!this.labels, !!this.prices, !!this.vaultsStatic, !!this.vaultsGlobal, !!this.vaultsPersonal);
         this.ready = this.maglevSupportsChain && this.labels && this.prices && this.vaultsStatic && this.vaultsGlobal && (!this.connected || this.vaultsPersonal);
@@ -70,6 +90,15 @@ export class GlobalContext {
     }
 
     loading() {
+        if (this.hasDataErrors) {
+            // Find the first error to display
+            for (let [key, error] of Object.entries(this.dataErrors)) {
+                if (error) {
+                    return <ContractErrorMessage error={error} componentName={`GlobalContext-${key}`} />;
+                }
+            }
+        }
+        
         if (!this.maglevSupportsChain) return "Maglev not currently supported on this chain.";
 
         return "Loading...";

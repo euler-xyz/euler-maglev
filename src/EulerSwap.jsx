@@ -24,6 +24,7 @@ import { RadioButton } from 'primereact/radiobutton';
 import * as Lens from "./Lens";
 import * as EulerSwapUtils from "./EulerSwapUtils";
 import * as LibEulerSwap from "../lib/euler-swap-jslib/src/LibEulerSwap";
+import { ContractErrorMessage } from "./ErrorBoundary";
 
 const c1e18 = 10n**18n;
 
@@ -258,7 +259,7 @@ export function EulerSwapViz(props) {
     let curveInfoOverlay = useRef(null);
     let [curveInfo, setCurveInfo] = useState();
 
-    let { data: enteredMarkets } = Lens.useMyEnteredMarkets(props.account);
+    let { data: enteredMarkets, error: enteredMarketsError, isError: enteredMarketsIsError } = Lens.useMyEnteredMarkets(props.account);
 
     let seenVaults = {};
     if (enteredMarkets) {
@@ -269,8 +270,19 @@ export function EulerSwapViz(props) {
     }
     let allVaults = Object.keys(seenVaults);
 
-    let { data: vaultsPersonal } = Lens.useVaultsPersonalInfo(props.account, allVaults);
-    let { data: ltvMatrix } = Lens.useLTVMatrix(allVaults, false);
+    let { data: vaultsPersonal, error: vaultsPersonalError, isError: vaultsPersonalIsError } = Lens.useVaultsPersonalInfo(props.account, allVaults);
+    let { data: ltvMatrix, error: ltvMatrixError, isError: ltvMatrixIsError } = Lens.useLTVMatrix(allVaults, false);
+
+    // Handle errors first
+    if (enteredMarketsIsError) {
+        return <ContractErrorMessage error={enteredMarketsError} componentName="EnteredMarkets" />;
+    }
+    if (vaultsPersonalIsError) {
+        return <ContractErrorMessage error={vaultsPersonalError} componentName="VaultsPersonal" />;
+    }
+    if (ltvMatrixIsError) {
+        return <ContractErrorMessage error={ltvMatrixError} componentName="LTVMatrix" />;
+    }
 
     if (!ctx.ready || !enteredMarkets || !vaultsPersonal || !ltvMatrix) return ctx.loading();
     if (!ctx.addExtraVaults(seenVaults)) return 'Loading...';
@@ -434,18 +446,24 @@ export function EulerSwapViz(props) {
     let initialStateRaw = {};
 
     try {
-        if (Math.abs(navMidpoint - params.curveMid) < 0.0000001) {
-            initialStateRaw.currReserve0 = paramsRaw.equilibriumReserve0;
-            initialStateRaw.currReserve1 = paramsRaw.equilibriumReserve1;
-        } else if (navMidpoint > params.curveMid) {
-            initialStateRaw.currReserve0 = paramsRaw.equilibriumReserve0 - ctx.valueToAmount(props.vault0, navMidpoint - params.curveMid);
-            initialStateRaw.currReserve1 = LibEulerSwap.f(initialStateRaw.currReserve0, paramsRaw.priceX, paramsRaw.priceY, paramsRaw.equilibriumReserve0, paramsRaw.equilibriumReserve1, paramsRaw.concentrationX);
-        } else {
-            initialStateRaw.currReserve1 = paramsRaw.equilibriumReserve1 - ctx.valueToAmount(props.vault1, params.curveMid - navMidpoint);
-            initialStateRaw.currReserve0 = LibEulerSwap.f(initialStateRaw.currReserve1, paramsRaw.priceY, paramsRaw.priceX, paramsRaw.equilibriumReserve1, paramsRaw.equilibriumReserve0, paramsRaw.concentrationY);
-        }
+        // Only perform calculations if all required parameters are defined
+        if (params.concentrationX !== undefined && params.concentrationY !== undefined && parsedPrice[0] && parsedPrice[1]) {
+            if (Math.abs(navMidpoint - params.curveMid) < 0.0000001) {
+                initialStateRaw.currReserve0 = paramsRaw.equilibriumReserve0;
+                initialStateRaw.currReserve1 = paramsRaw.equilibriumReserve1;
+            } else if (navMidpoint > params.curveMid) {
+                initialStateRaw.currReserve0 = paramsRaw.equilibriumReserve0 - ctx.valueToAmount(props.vault0, navMidpoint - params.curveMid);
+                initialStateRaw.currReserve1 = LibEulerSwap.f(initialStateRaw.currReserve0, paramsRaw.priceX, paramsRaw.priceY, paramsRaw.equilibriumReserve0, paramsRaw.equilibriumReserve1, paramsRaw.concentrationX);
+            } else {
+                initialStateRaw.currReserve1 = paramsRaw.equilibriumReserve1 - ctx.valueToAmount(props.vault1, params.curveMid - navMidpoint);
+                initialStateRaw.currReserve0 = LibEulerSwap.f(initialStateRaw.currReserve1, paramsRaw.priceY, paramsRaw.priceX, paramsRaw.equilibriumReserve1, paramsRaw.equilibriumReserve0, paramsRaw.concentrationY);
+            }
 
-        [initialStateRaw.currReserve0, initialStateRaw.currReserve1] = LibEulerSwap.tightenToCurve(paramsRaw, initialStateRaw.currReserve0, initialStateRaw.currReserve1);
+            [initialStateRaw.currReserve0, initialStateRaw.currReserve1] = LibEulerSwap.tightenToCurve(paramsRaw, initialStateRaw.currReserve0, initialStateRaw.currReserve1);
+        } else {
+            // Set to undefined if parameters are not valid for calculation
+            initialStateRaw.currReserve0 = initialStateRaw.currReserve1 = undefined;
+        }
     } catch(e) {
         console.warn(e);
         initialStateRaw.currReserve0 = initialStateRaw.currReserve1 = undefined;
@@ -453,6 +471,12 @@ export function EulerSwapViz(props) {
 
 
     let installEulerSwap = async () => {
+        // Validate that all required parameters are defined before installing
+        if (params.concentrationX === undefined || params.concentrationY === undefined || params.fee === undefined || !parsedPrice[0] || !parsedPrice[1]) {
+            console.warn('Cannot install EulerSwap: Required parameters are undefined or invalid');
+            return;
+        }
+        
         await EulerSwapUtils.deployEulerSwap(ctx, paramsRaw, initialStateRaw, props.currReserves);
         if (props.onInstall) props.onInstall();
     };
@@ -471,6 +495,16 @@ export function EulerSwapViz(props) {
 
     let priceInfoAtFundSpace = (fundSpacePoint) => {
         let o = {};
+
+        // Return early if required parameters are undefined
+        if (paramsRaw.concentrationX === undefined || paramsRaw.concentrationY === undefined || !paramsRaw.priceX || !paramsRaw.priceY) {
+            return {
+                eqPrice: 0,
+                xyPrice: 0,
+                yxPrice: 0,
+                priceImpact: 0
+            };
+        }
 
         o.eqPrice = ctx.render18Scale(scaleDecimals(ctx, paramsRaw.vault0, paramsRaw.vault1, 10n**18n * paramsRaw.priceX) / paramsRaw.priceY);
 
@@ -685,7 +719,7 @@ export function EulerSwapViz(props) {
         </div>
 
         {!props.viewMode && <div className="mt-6 flex align-items-center justify-content-center">
-            <Button className="mr-6" label="Install" onClick={installEulerSwap} />
+            <Button className="mr-6" label="Install" disabled={params.concentrationX === undefined || params.concentrationY === undefined || params.fee === undefined || !parsedPrice[0] || !parsedPrice[1]} onClick={installEulerSwap} />
             <Button className="mr-6" label="Show Raw" onClick={() => setShowRawDialog(true)} />
         </div>}
 
@@ -729,9 +763,30 @@ export function VaultPairChooser(props) {
 export function EulerSwapPanel(props) {
     let ctx = props.ctx;
 
-    let { data: myEulerSwap } = Lens.useMyEulerSwap(ctx.myAddr);
+    // Check if EulerSwap is supported on this chain
+    if (!ctx.eulerSwapSupportsChain) {
+        return <Panel header="EulerSwap" className="mt-6">
+            <div style={{ textAlign: 'center', padding: '2rem' }}>
+                <h3 style={{ color: 'orange' }}>
+                    EulerSwap is not currently supported on this chain.
+                </h3>
+                <p style={{ marginTop: '1rem' }}>
+                    Maglev is currently available on Ethereum, BSC, and Unichain.
+                </p>
+            </div>
+        </Panel>;
+    }
+
+    let { data: myEulerSwap, error: myEulerSwapError, isError: myEulerSwapIsError } = Lens.useMyEulerSwap(ctx.myAddr);
     let [uiState, setUiState] = useState('default');
     let [vaults, setVaults] = useState();
+
+    // Handle errors first
+    if (myEulerSwapIsError) {
+        return <Panel header="EulerSwap" className="mt-6">
+            <ContractErrorMessage error={myEulerSwapError} componentName="MyEulerSwap" />
+        </Panel>;
+    }
 
     if (!ctx.ready || !myEulerSwap) return ctx.loading();
 
@@ -793,6 +848,18 @@ export function EulerSwapPanel(props) {
 export function EulerSwapBrowse(props) {
     let ctx = props.ctx;
 
+    // Check if EulerSwap is supported on this chain
+    if (!ctx.eulerSwapSupportsChain) {
+        return <div className="mt-6">
+            <h2 style={{ color: 'orange', textAlign: 'center' }}>
+                EulerSwap is not currently supported on this chain.
+            </h2>
+            <p style={{ textAlign: 'center', marginTop: '1rem' }}>
+                Maglev is currently available on Ethereum, BSC, and Unichain.
+            </p>
+        </div>;
+    }
+
     let [assetA, setAssetA] = useState();
     let [assetB, setAssetB] = useState();
     let [swapAmount, setSwapAmount] = useState('');
@@ -800,12 +867,12 @@ export function EulerSwapBrowse(props) {
     let [exactIn, setExactIn] = useState(true);
     let [sortBy, setSortBy] = useState('liquidity');
 
-    let { data: eulerSwapData } = Lens.useEulerSwapData();
+    let { data: eulerSwapData, error: eulerSwapDataError, isError: eulerSwapDataIsError } = Lens.useEulerSwapData();
 
     let assetAInfo = assetA && ctx.knownAssets[assetA];
     let assetBInfo = assetB && ctx.knownAssets[assetB];
 
-    let { data: allowance } = Lens.useAllowance(assetAInfo?.addr, ctx.myPrimaryAddr, ctx.currChain?.addresses.eulerSwapAddrs.eulerSwapPeriphery);
+    let { data: allowance, error: allowanceError, isError: allowanceIsError } = Lens.useAllowance(assetAInfo?.addr, ctx.myPrimaryAddr, ctx.currChain?.addresses.eulerSwapAddrs.eulerSwapPeriphery);
 
     let swapAmountParsed;
     if (assetAInfo && assetBInfo && swapAmount) {
@@ -824,7 +891,18 @@ export function EulerSwapBrowse(props) {
         slip = c1e18 - parseUnits(slip.toString(), 18);
     }
 
-    let { data: eulerSwapQuotes } = Lens.useEulerSwapQuoteMulti(ctx, eulerSwapData && eulerSwapData.map(e => e.addr), assetA, assetB, swapAmountParsed, exactIn);
+    let { data: eulerSwapQuotes, error: eulerSwapQuotesError, isError: eulerSwapQuotesIsError } = Lens.useEulerSwapQuoteMulti(ctx, eulerSwapData && eulerSwapData.map(e => e.addr), assetA, assetB, swapAmountParsed, exactIn);
+
+    // Handle errors first
+    if (eulerSwapDataIsError) {
+        return <ContractErrorMessage error={eulerSwapDataError} componentName="EulerSwapData" />;
+    }
+    if (allowanceIsError) {
+        return <ContractErrorMessage error={allowanceError} componentName="Allowance" />;
+    }
+    if (eulerSwapQuotesIsError) {
+        return <ContractErrorMessage error={eulerSwapQuotesError} componentName="EulerSwapQuotes" />;
+    }
 
     if (!eulerSwapData || !ctx.ready) return ctx.loading();
 
@@ -1012,8 +1090,26 @@ export function EulerSwapBrowse(props) {
 
 export function EulerSwapShowInstance(props) {
     let ctx = props.ctx;
+
+    // Check if EulerSwap is supported on this chain
+    if (!ctx.eulerSwapSupportsChain) {
+        return <div className="mt-6">
+            <h2 style={{ color: 'orange', textAlign: 'center' }}>
+                EulerSwap is not currently supported on this chain.
+            </h2>
+            <p style={{ textAlign: 'center', marginTop: '1rem' }}>
+                Maglev is currently available on Ethereum, BSC, and Unichain.
+            </p>
+        </div>;
+    }
+
     let params = useParams();
-    let { data: myEulerSwap, isPending: pending1 } = Lens.useMyEulerSwap(params.account);
+    let { data: myEulerSwap, isPending: pending1, error: myEulerSwapError, isError: myEulerSwapIsError } = Lens.useMyEulerSwap(params.account);
+
+    // Handle errors first
+    if (myEulerSwapIsError) {
+        return <ContractErrorMessage error={myEulerSwapError} componentName="MyEulerSwap" />;
+    }
 
     if (!ctx.ready || pending1) return ctx.loading();
     let existing = myEulerSwap && myEulerSwap.addr !== zeroAddress ? myEulerSwap.addr : undefined;

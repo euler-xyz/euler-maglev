@@ -11,6 +11,7 @@ import { Paginator } from 'primereact/paginator';
 import { Chart } from 'primereact/chart';
 
 import * as Lens from "./Lens";
+import { ContractErrorMessage } from "./ErrorBoundary";
 
 
 const c1e18 = 10n**18n;
@@ -147,7 +148,12 @@ export function VaultInfo(props) {
     let ctx = props.ctx;
     let params = useParams();
 
-    let { data: vaultsDetailed } = Lens.useVaultsDetailed([params.vault]);
+    let { data: vaultsDetailed, error: vaultsDetailedError, isError: vaultsDetailedIsError } = Lens.useVaultsDetailed([params.vault]);
+
+    // Handle errors first
+    if (vaultsDetailedIsError) {
+        return <ContractErrorMessage error={vaultsDetailedError} componentName="VaultsDetailed" />;
+    }
 
     if (!ctx.ready || !vaultsDetailed) return ctx.loading();
     if (!ctx.addExtraVaults({ [params.vault]: true, })) return 'Loading...';

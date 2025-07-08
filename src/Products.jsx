@@ -7,6 +7,7 @@ import { Column } from 'primereact/column';
 import { InputSwitch } from 'primereact/inputswitch';
 
 import * as Lens from "./Lens";
+import { ContractErrorMessage } from "./ErrorBoundary";
 
 
 function accumulate(accum, addend) {
@@ -59,7 +60,12 @@ export function ProductInfo(props) {
     let vaults = ctx.labels?.raw[params.product].vaults;
     let [liquidationLtv, setLiquidationLtv] = useState(false);
     let [leverageMode, setLeverageMode] = useState(false);
-    let { data: matrix, isPending: pending1 } = Lens.useLTVMatrix(vaults, liquidationLtv);
+    let { data: matrix, isPending: pending1, error: matrixError, isError: matrixIsError } = Lens.useLTVMatrix(vaults, liquidationLtv);
+
+    // Handle errors first
+    if (matrixIsError) {
+        return <ContractErrorMessage error={matrixError} componentName="LTVMatrix" />;
+    }
 
     if (!ctx.ready || pending1) return ctx.loading();
 

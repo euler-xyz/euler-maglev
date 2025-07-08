@@ -4,6 +4,7 @@ import { usePublicClient, useChainId } from 'wagmi';
 
 import { getChainConfigs } from './ChainConfig';
 import * as Utils from './Utils';
+import { getErrorHandlingOptions } from './ErrorBoundary';
 
 import maglevLensAbi from '../abis/MaglevLens.json';
 
@@ -162,7 +163,7 @@ export function useVaultsGlobal(vaultAddrs) {
         queryKey: ['maglev-vaults-global', currChain?.chainId, vaultAddrs],
         staleTime: 60 * 1000,
         enabled: !pending1 && vaultAddrs !== undefined,
-        throwOnError: true,
+        ...getErrorHandlingOptions('useVaultsGlobal'),
         queryFn: async () => {
             if (vaultAddrs.length === 0) return {};
 
@@ -192,7 +193,7 @@ export function useVaultsDetailed(vaultAddrs) {
         queryKey: ['maglev-vaults-detailed', currChain?.chainId, vaultAddrs],
         staleTime: 60 * 1000,
         enabled: !pending1 && vaultAddrs !== undefined,
-        throwOnError: true,
+        ...getErrorHandlingOptions('useVaultsDetailed'),
         queryFn: async () => {
             if (vaultAddrs.length === 0) return {};
 
@@ -218,7 +219,7 @@ export function useLTVMatrix(vaults, liquidationLtv) {
         queryKey: ['maglev-ltv-matrix', vaults, liquidationLtv],
         staleTime: 60 * 1000,
         enabled: vaults && !pending1,
-        throwOnError: true,
+        ...getErrorHandlingOptions('useLTVMatrix'),
         queryFn: async () => {
             let raw = await client.readContract({
                 address: currChain.addresses.maglevAddrs.maglevLens,
@@ -269,6 +270,7 @@ export function useVaultsPersonalInfo(me, vaultAddrs) {
         queryKey: ['maglev-vaults-personal', currChain?.chainId, me, vaultAddrs],
         staleTime: 60 * 1000,
         enabled: !!me && !pending1 && vaultAddrs !== undefined,
+        ...getErrorHandlingOptions('useVaultsPersonalInfo'),
         queryFn: async () => {
             if (vaultAddrs.length === 0) return {};
 
@@ -292,6 +294,7 @@ export function useVaultsPersonalInfoMulti(me, subAccountBitmask, vaultAddrs) {
         queryKey: ['maglev-vaults-personal-multi', currChain?.chainId, me, subAccountBitmask.toString(), vaultAddrs],
         staleTime: 60 * 1000,
         enabled: !!me && !pending1 && vaultAddrs !== undefined,
+        ...getErrorHandlingOptions('useVaultsPersonalInfoMulti'),
         queryFn: async () => {
             if (vaultAddrs.length === 0) return {};
 
@@ -315,7 +318,7 @@ export function useMyEnteredMarkets(me) {
         queryKey: ['maglev-myEnteredMarkets', me],
         staleTime: 60 * 1000,
         enabled: !pending1,
-        throwOnError: true,
+        ...getErrorHandlingOptions('useMyEnteredMarkets'),
         queryFn: async () => {
             let raw = await client.readContract({
                 address: currChain.addresses.maglevAddrs.maglevLens,
@@ -339,8 +342,8 @@ export function useMyEulerSwap(myAddr) {
     return useQuery({
         queryKey: ['maglev-eulerSwap', 'my', currChain?.chainId, myAddr],
         staleTime: 60 * 1000,
-        enabled: !!myAddr && !pending1,
-        throwOnError: true,
+        enabled: !!myAddr && !pending1 && !!currChain?.addresses.eulerSwapAddrs,
+        ...getErrorHandlingOptions('useMyEulerSwap'),
         queryFn: async () => {
             let raw = await client.readContract({
                 address: currChain.addresses.maglevAddrs.maglevLens,
@@ -362,8 +365,8 @@ export function useEulerSwapData() {
     return useQuery({
         queryKey: ['maglev-eulerSwap', 'data', currChain?.chainId],
         staleTime: 60 * 1000,
-        enabled: !pending1,
-        throwOnError: true,
+        enabled: !pending1 && !!currChain?.addresses.eulerSwapAddrs,
+        ...getErrorHandlingOptions('useEulerSwapData'),
         queryFn: async () => {
             let raw = await client.readContract({
                 address: currChain.addresses.maglevAddrs.maglevLens,
@@ -386,13 +389,13 @@ export function useEulerSwapQuoteMulti(ctx, eulerSwaps, tokenIn, tokenOut, amoun
         tokenOut = ctx.knownAssets[tokenOut]?.addr;
     }
 
-    let enabled = !!(!pending1 && eulerSwaps && tokenIn && tokenOut && amount);
+    let enabled = !!(!pending1 && currChain?.addresses.eulerSwapAddrs && eulerSwaps && tokenIn && tokenOut && amount);
 
     return useQuery({
         queryKey: ['maglev-eulerSwap', 'quoteMulti', currChain?.chainId, eulerSwaps, tokenIn, tokenOut, amount !== undefined && amount.toString(), exactIn],
         staleTime: 60 * 1000,
         enabled,
-        throwOnError: true,
+        ...getErrorHandlingOptions('useEulerSwapQuoteMulti'),
         queryFn: async () => {
             let raw = await client.readContract({
                 address: currChain.addresses.maglevAddrs.maglevLens,
@@ -410,13 +413,13 @@ export function useAllowance(token, owner, spender) {
     let { data: currChain, isPending: pending1 } = useEulerChain();
     let client = usePublicClient();
 
-    let enabled = !!(token && owner && !pending1);
+    let enabled = !!(token && owner && spender && !pending1);
 
     return useQuery({
         queryKey: ['maglev-allowance', currChain?.chainId, token, owner, spender],
         staleTime: 60 * 1000,
         enabled,
-        throwOnError: true,
+        ...getErrorHandlingOptions('useAllowance'),
         queryFn: async () => {
             let raw = await client.readContract({
                 address: token,

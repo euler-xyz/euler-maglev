@@ -16,6 +16,7 @@ import { VaultList, VaultInfo } from './Vaults';
 import { ProductsList, ProductInfo } from './Products';
 import { AccountPanel } from './Account';
 import { EulerSwapBrowse, EulerSwapShowInstance } from './EulerSwap';
+import { ContractErrorMessage } from "./ErrorBoundary";
 
 
 const wagmiConfig = getDefaultConfig({
