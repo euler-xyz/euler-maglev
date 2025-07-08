@@ -795,7 +795,7 @@ export function EulerSwapPanel(props) {
 
     let onChooseVaults = (vault0, vault1) => {
         setVaults([vault0, vault1]);
-        setUiState('edit');
+        setUiState('edit-new');
     };
 
     let onInstall = () => {
@@ -808,7 +808,7 @@ export function EulerSwapPanel(props) {
 
     let doEdit = () => {
         setVaults([myEulerSwap.params.vault0, myEulerSwap.params.vault1]);
-        setUiState('edit');
+        setUiState('edit-existing');
     };
 
     return <Panel header="EulerSwap" className="mt-6">
@@ -830,7 +830,11 @@ export function EulerSwapPanel(props) {
 
         {uiState === 'new-choose-vaults' && <VaultPairChooser ctx={ctx} onChoose={onChooseVaults} />}
 
-        {uiState === 'edit' && <div style={{ width: '100%', }}>
+        {uiState === 'edit-new' && <div style={{ width: '100%', }}>
+            <EulerSwapViz ctx={ctx} account={ctx.myAddr} vault0={vaults[0]} vault1={vaults[1]} currReserves={existing && currReserves} onInstall={onInstall} />
+        </div>}
+
+        {uiState === 'edit-existing' && <div style={{ width: '100%', }}>
             <EulerSwapViz ctx={ctx} account={ctx.myAddr} vault0={vaults[0]} vault1={vaults[1]} initialParams={existing && myEulerSwap.params} currReserves={existing && currReserves} onInstall={onInstall} />
         </div>}
     </Panel>
