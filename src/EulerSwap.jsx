@@ -432,10 +432,10 @@ export function EulerSwapViz(props) {
         let priceToOracleRatio = priceFloat / oraclePrice;
 
         if (isNaN(priceFloat)) priceWarning = 'Missing price';
-        else if (priceFloat < 1e-7)  priceWarning = 'Price unexpectedly small';
-        else if (priceFloat > 1e7)  priceWarning = 'Price unexpectedly large';
-        else if (priceToOracleRatio < 1/1.1) priceWarning = 'Price less than 10% oracle price';
-        else if (priceToOracleRatio > 1.1) priceWarning = 'Price greater than 10% oracle price';
+        else if (priceFloat < 1e-7)  priceWarning = 'Equilibrium price unexpectedly small';
+        else if (priceFloat > 1e7)  priceWarning = 'Equilibrium price unexpectedly large';
+        else if (priceToOracleRatio < 1/1.1) priceWarning = 'Equilibrium price less than 10% oracle price';
+        else if (priceToOracleRatio > 1.1) priceWarning = 'Equilibrium price greater than 10% oracle price';
     }
 
 
@@ -733,13 +733,19 @@ export function EulerSwapViz(props) {
             </div>
         </div>
 
-        {priceWarning && <div className="mt-6" style={{ textAlign: 'center', }}>
-            <Message severity="warn" text={priceWarning} />
-        </div>}
+        {!props.viewMode && <div>
+            <div className="mt-6" style={{ textAlign: 'center', paddingLeft: '20%', paddingRight: '20%', fontSize: '110%', color: '#ff7c7c', }}>
+                Maglev is an advanced interface. Please carefully verify all parameters are correct before submitting any transaction. Neither Euler Labs nor Euler DAO are responsible for any losses resulting from the use of this tool.
+            </div>
 
-        {!props.viewMode && <div className="mt-4 flex align-items-center justify-content-center">
-            <Button className="mr-6" label="Install" disabled={params.concentrationX === undefined || params.concentrationY === undefined || params.fee === undefined || !parsedPrice[0] || !parsedPrice[1]} onClick={installEulerSwap} />
-            <Button className="mr-6" label="Show Raw" onClick={() => setShowRawDialog(true)} />
+            {priceWarning && <div className="mt-4" style={{ textAlign: 'center', }}>
+                <Message severity="warn" text={priceWarning} />
+            </div>}
+
+            <div className="mt-4 flex align-items-center justify-content-center">
+                <Button className="mr-6" label="Install" disabled={params.concentrationX === undefined || params.concentrationY === undefined || params.fee === undefined || !parsedPrice[0] || !parsedPrice[1]} onClick={installEulerSwap} />
+                <Button className="mr-6" label="Show Raw" onClick={() => setShowRawDialog(true)} />
+            </div>
         </div>}
 
         <Dialog header="Header" visible={showRawDialog} style={{ width: '90vw' }} onHide={() => {if (!showRawDialog) return; setShowRawDialog(false); }}>
