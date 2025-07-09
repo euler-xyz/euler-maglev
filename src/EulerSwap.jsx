@@ -424,6 +424,21 @@ export function EulerSwapViz(props) {
     };
 
 
+    let priceWarning;
+
+    {
+        let priceFloat = parseFloat(params.price);
+        let oraclePrice = loadPrice();
+        let priceToOracleRatio = priceFloat / oraclePrice;
+
+        if (isNaN(priceFloat)) priceWarning = 'Missing price';
+        else if (priceFloat < 1e-7)  priceWarning = 'Price unexpectedly small';
+        else if (priceFloat > 1e7)  priceWarning = 'Price unexpectedly large';
+        else if (priceToOracleRatio < 1/1.1) priceWarning = 'Price less than 10% oracle price';
+        else if (priceToOracleRatio > 1.1) priceWarning = 'Price greater than 10% oracle price';
+    }
+
+
     let parsedPrice = LibEulerSwap.computePriceFraction(params.price, ctx.vaultDecimals(props.vault0), ctx.vaultDecimals(props.vault1));
 
     let paramsRaw = {
@@ -718,7 +733,11 @@ export function EulerSwapViz(props) {
             </div>
         </div>
 
-        {!props.viewMode && <div className="mt-6 flex align-items-center justify-content-center">
+        {priceWarning && <div className="mt-6" style={{ textAlign: 'center', }}>
+            <Message severity="warn" text={priceWarning} />
+        </div>}
+
+        {!props.viewMode && <div className="mt-4 flex align-items-center justify-content-center">
             <Button className="mr-6" label="Install" disabled={params.concentrationX === undefined || params.concentrationY === undefined || params.fee === undefined || !parsedPrice[0] || !parsedPrice[1]} onClick={installEulerSwap} />
             <Button className="mr-6" label="Show Raw" onClick={() => setShowRawDialog(true)} />
         </div>}
