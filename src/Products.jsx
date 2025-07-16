@@ -116,8 +116,9 @@ export function ProductInfo(props) {
             </div>
         </div>
 
-        <div className="flex align-items-center mt-4 ml-6">
-            * Columns are liability vaults, rows are collateral vaults
+        <div className="mt-4 ml-6">
+            <div>* Columns are liability vaults, rows are collateral vaults</div>
+            <div className="mt-2">* Only vaults within the product are shown. Vaults in the cluster may accept external vaults as collateral and vice versa, and they are not shown above.</div>
         </div>
     </div>
 }
