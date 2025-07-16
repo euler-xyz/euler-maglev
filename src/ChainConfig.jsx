@@ -45,6 +45,15 @@ export function getChainConfigs() {
             chain.addresses.maglevAddrs = {
                 maglevLens: '0x1F5fDa12a026729e2635978324d2f98d839859f9',
             };
+        } else if (chain.chainId === 43114) {
+            chain.addresses.eulerSwapAddrs = {
+                eulerSwapFactory: '0x8A1D3a4850ed7deeC9003680Cf41b8E75D27e440',
+                eulerSwapPeriphery: '0x31F34124a37f94efd17201A1B88d5008cD444c72',
+            };
+
+            chain.addresses.maglevAddrs = {
+                maglevLens: '0xD43a8258549b77a4E55614648116e3a5923BAB0D',
+            };
         }
     }
 
@@ -62,15 +71,7 @@ export function getWagmiChainConfigs() {
         if (config.status === 'testing') continue;
         if (!chain) throw Error(`no viem entry found for chain ${config.name}`);
 
-        // FIXME: Figure out better solution for this than hard-coding
-
-        if (chain.id === 1) {
-            chain.rpcUrls.default.http[0] = 'https://lb.drpc.org/ogrpc?network=ethereum&dkey=AqqUmy43EUMFg-KecrSxzlod45SCPT4R8I63FuhS1q00';
-        } else if (chain.id === 56) {
-            chain.rpcUrls.default.http[0] = 'https://lb.drpc.org/ogrpc?network=bsc&dkey=AqqUmy43EUMFg-KecrSxzlod45SCPT4R8I63FuhS1q00';
-        } else if (chain.id === 130) {
-            chain.rpcUrls.default.http[0] = 'https://lb.drpc.org/ogrpc?network=unichain&dkey=AqqUmy43EUMFg-KecrSxzlod45SCPT4R8I63FuhS1q00';
-        }
+        chain.rpcUrls.default.http[0] = `https://rpc2.euler.finance/maglev/evm/${chain.id}`;
 
         chains.push(chain);
     }

@@ -796,7 +796,7 @@ export function EulerSwapPanel(props) {
                     EulerSwap is not currently supported on this chain.
                 </h3>
                 <p style={{ marginTop: '1rem' }}>
-                    Maglev is currently available on Ethereum, BSC, and Unichain.
+                    Maglev is currently available on Ethereum, BSC, Avalanche, and Unichain.
                 </p>
             </div>
         </Panel>;
@@ -884,7 +884,7 @@ export function EulerSwapBrowse(props) {
                 EulerSwap is not currently supported on this chain.
             </h2>
             <p style={{ textAlign: 'center', marginTop: '1rem' }}>
-                Maglev is currently available on Ethereum, BSC, and Unichain.
+                Maglev is currently available on Ethereum, BSC, Avalanche, and Unichain.
             </p>
         </div>;
     }
@@ -1127,7 +1127,7 @@ export function EulerSwapShowInstance(props) {
                 EulerSwap is not currently supported on this chain.
             </h2>
             <p style={{ textAlign: 'center', marginTop: '1rem' }}>
-                Maglev is currently available on Ethereum, BSC, and Unichain.
+                Maglev is currently available on Ethereum, BSC, Avalanche, and Unichain.
             </p>
         </div>;
     }
