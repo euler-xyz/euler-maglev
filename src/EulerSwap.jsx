@@ -1033,7 +1033,6 @@ export function EulerSwapBrowse(props) {
     if (!eulerSwapQuotes && sortBy === 'liquidity') {
         rows.sort((a,b) => bigintSign(b.liquidity - a.liquidity));
     }
-        console.log(rows[0]);
 
     let amountInput = () => {
         return <div className="field">

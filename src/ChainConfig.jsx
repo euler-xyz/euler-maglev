@@ -71,7 +71,7 @@ export function getWagmiChainConfigs() {
         if (config.status === 'testing') continue;
         if (!chain) throw Error(`no viem entry found for chain ${config.name}`);
 
-        chain.rpcUrls.default.http[0] = `https://rpc2.euler.finance/maglev/evm/${chain.id}`;
+        if (chain.id !== 31337) chain.rpcUrls.default.http[0] = `https://rpc2.euler.finance/maglev/evm/${chain.id}`;
 
         chains.push(chain);
     }
