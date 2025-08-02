@@ -27,6 +27,7 @@ import * as LibEulerSwap from "../lib/euler-swap-jslib/src/LibEulerSwap";
 import { ContractErrorMessage } from "./ErrorBoundary";
 
 const c1e18 = 10n**18n;
+const c1e27 = 10n**27n;
 
 
 function isBig(n) {
@@ -1167,15 +1168,21 @@ export function EulerSwapShowInstance(props) {
 
 
 
-function calculateLimits(params, vaultList, ltvMatrix) {
+function calculateLimits(params, origVaultList, ltvMatrix) {
+    origVaultList = [...origVaultList];
+    for (let v of origVaultList) {
+        if (v.debt !== 0n) v.value = -v.debt;
+        else v.value = v.assets;
+    }
+
     console.log("PARAMS",params);
-    console.log("VL",vaultList);
+    console.log("ORIGVL",origVaultList);
     let v0Index, v1Index;
 
-    for (let i = 0; i < vaultList.length; i++) {
-        if (vaultList[i].vaultAddr === params.vault0) {
+    for (let i = 0; i < origVaultList.length; i++) {
+        if (origVaultList[i].vaultAddr === params.vault0) {
             v0Index = i;
-        } else if (vaultList[i].vaultAddr === params.vault1) {
+        } else if (origVaultList[i].vaultAddr === params.vault1) {
             v1Index = i;
         }
     }
@@ -1186,19 +1193,78 @@ function calculateLimits(params, vaultList, ltvMatrix) {
         return parseFloat(formatUnits(bn, decimals));
     };
 
-    let calcHealthScore = () => {
+    let calcHealthScore = (vaultList) => {
         let debt = 0;
+        let debtIndex;
+
+        for (let i = 0; i < vaultList.length; i++) {
+            if (debt > 0) return 0; // multiple debt assets not allowed: 0 health score
+            if (vaultList[i].value < 0n) {
+                debt = toNum(-vaultList[i].value, vaultList[i].decimals) * vaultList[i].price;
+                debtIndex = i;
+            }
+        }
+
+        if (debtIndex === undefined) return Infinity; // no debt: infinite health
+
         let collateral = 0;
 
         for (let i = 0; i < vaultList.length; i++) {
-            if (debt > 0) return 0; // multiple debt assets not allowed
-
-            debt += toNum(vaultList[i].debt, vaultList[i].decimals) * vaultList[i].price;
-            collateral += toNum(vaultList[i].assets, vaultList[i].decimals) * vaultList[i].price * ltvMatrix[i][i];
+            if (i === debtIndex) continue;
+            collateral += toNum(vaultList[i].value, vaultList[i].decimals) * vaultList[i].price * ltvMatrix[i][i];
         }
 
-        return debt > 0 ? collateral / debt : Infinity;
+        return collateral / debt;
     };
 
-    console.log(calcHealthScore());
+    let simSwap = (reserve0, reserve1, amountOut, asset0IsInput) => {
+        let vaultList = [];
+        for (let v of origVaultList) vaultList.push({ ...v, });
+
+        let equilibriumPriceAB = params.priceX * c1e27 / params.priceY;
+        // FIXME: scaleDecimals!
+        equilibriumPriceAB = toNum(equilibriumPriceAB, 27);
+        if (!asset0IsInput) equilibriumPriceAB = 1 / equilibriumPriceAB;
+        console.log("EQPRICE", equilibriumPriceAB);
+
+        let newReserve0, newReserve1;
+
+        let amountIn;
+        if (asset0IsInput) {
+            newReserve1 = reserve1 - amountOut;
+            amountIn = LibEulerSwap.f(newReserve1, params.priceY, params.priceX, reserve1, reserve0, params.concentrationY) - reserve0;
+            newReserve0 = reserve0 + amountIn;
+        } else {
+            newReserve0 = reserve0 - amountOut;
+            amountIn = LibEulerSwap.f(newReserve0, params.priceX, params.priceY, reserve0, reserve1, params.concentrationX) - reserve1;
+            newReserve1 = reserve1 + amountIn;
+        }
+
+        let inVault = vaultList[asset0IsInput ? v0Index : v1Index];
+        let outVault = vaultList[asset0IsInput ? v1Index : v0Index];
+
+        inVault.value += amountIn;
+        outVault.value -= amountOut;
+
+        let newPriceAB = LibEulerSwap.getCurrentPriceRAY({
+            ...params,
+            equilibriumReserve0: reserve0,
+            equilibriumReserve1: reserve1,
+        }, newReserve0, newReserve1);
+
+        // FIXME: scaleDecimals!
+
+        newPriceAB = toNum(newPriceAB, 27);
+        if (!asset0IsInput) newPriceAB = 1 / newPriceAB;
+        console.log("NP",newPriceAB);
+
+        inVault.price *= newPriceAB / equilibriumPriceAB;
+        outVault.price *= equilibriumPriceAB / newPriceAB;
+
+        return vaultList;
+    };
+
+    let newVaultList = simSwap(params.equilibriumReserve0, params.equilibriumReserve1, 100000000000n, true);
+    console.log("NEWVAULT", newVaultList);
+    console.log("NEW HEALTH", calcHealthScore(newVaultList));
 }
