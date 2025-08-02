@@ -1198,8 +1198,8 @@ function calculateLimits(params, origVaultList, ltvMatrix) {
         let debtIndex;
 
         for (let i = 0; i < vaultList.length; i++) {
-            if (debt > 0) return 0; // multiple debt assets not allowed: 0 health score
             if (vaultList[i].value < 0n) {
+                if (debt > 0) return 0; // multiple debt assets not allowed: 0 health score
                 debt = toNum(-vaultList[i].value, vaultList[i].decimals) * vaultList[i].price;
                 debtIndex = i;
             }
@@ -1211,7 +1211,7 @@ function calculateLimits(params, origVaultList, ltvMatrix) {
 
         for (let i = 0; i < vaultList.length; i++) {
             if (i === debtIndex) continue;
-            collateral += toNum(vaultList[i].value, vaultList[i].decimals) * vaultList[i].price * ltvMatrix[i][i];
+            collateral += toNum(vaultList[i].value, vaultList[i].decimals) * vaultList[i].price * ltvMatrix[i][debtIndex];
         }
 
         return collateral / debt;
@@ -1225,7 +1225,6 @@ function calculateLimits(params, origVaultList, ltvMatrix) {
         // FIXME: scaleDecimals!
         equilibriumPriceAB = toNum(equilibriumPriceAB, 27);
         if (!asset0IsInput) equilibriumPriceAB = 1 / equilibriumPriceAB;
-        console.log("EQPRICE", equilibriumPriceAB);
 
         let newReserve0, newReserve1;
 
@@ -1256,7 +1255,6 @@ function calculateLimits(params, origVaultList, ltvMatrix) {
 
         newPriceAB = toNum(newPriceAB, 27);
         if (!asset0IsInput) newPriceAB = 1 / newPriceAB;
-        console.log("NP",newPriceAB);
 
         inVault.price *= newPriceAB / equilibriumPriceAB;
         outVault.price *= equilibriumPriceAB / newPriceAB;
@@ -1264,7 +1262,12 @@ function calculateLimits(params, origVaultList, ltvMatrix) {
         return vaultList;
     };
 
-    let newVaultList = simSwap(params.equilibriumReserve0, params.equilibriumReserve1, 100000000000n, true);
-    console.log("NEWVAULT", newVaultList);
-    console.log("NEW HEALTH", calcHealthScore(newVaultList));
+    //for (let i = 0n; i < 10n; i++) {
+        let r0 = params.equilibriumReserve0 / 3n;
+        let r1 = params.equilibriumReserve1 / 3n;
+        let amountOut = r1 - 1n;
+        let newVaultList = simSwap(r0, r1, amountOut, true);
+        console.log("NVL", newVaultList);
+        console.log("NEW HEALTH", calcHealthScore(newVaultList));
+    //}
 }
