@@ -484,6 +484,18 @@ export function EulerSwapViz(props) {
         initialStateRaw.currReserve0 = initialStateRaw.currReserve1 = undefined;
     }
 
+    {
+        let vaultInfo = vaultStatuses.map(s => { return {
+            vaultAddr: s.vaultAddr,
+            decimals: ctx.vaultDecimals(s.vaultAddr),
+            price: ctx.vaultAssetPrice(s.vaultAddr),
+            assets: s.assets,
+            debt: s.debt,
+        }});
+
+        calculateLimits(paramsRaw, vaultInfo, ltvMatrix);
+    }
+
 
     let installEulerSwap = async () => {
         // Validate that all required parameters are defined before installing
@@ -1149,4 +1161,44 @@ export function EulerSwapShowInstance(props) {
             <EulerSwapViz viewMode ctx={ctx} account={myEulerSwap.params.eulerAccount} existingOperator={myEulerSwap.addr} vault0={myEulerSwap.params.vault0} vault1={myEulerSwap.params.vault1} initialParams={myEulerSwap.params} currReserves={{ reserve0: myEulerSwap.reserve0, reserve1: myEulerSwap.reserve1, }} />
         </div>}
     </div>
+}
+
+
+
+
+
+function calculateLimits(params, vaultList, ltvMatrix) {
+    console.log("PARAMS",params);
+    console.log("VL",vaultList);
+    let v0Index, v1Index;
+
+    for (let i = 0; i < vaultList.length; i++) {
+        if (vaultList[i].vaultAddr === params.vault0) {
+            v0Index = i;
+        } else if (vaultList[i].vaultAddr === params.vault1) {
+            v1Index = i;
+        }
+    }
+
+    if (v0Index === undefined || v1Index === undefined) throw Error("vault not found in vaultList");
+
+    let toNum = (bn, decimals) => {
+        return parseFloat(formatUnits(bn, decimals));
+    };
+
+    let calcHealthScore = () => {
+        let debt = 0;
+        let collateral = 0;
+
+        for (let i = 0; i < vaultList.length; i++) {
+            if (debt > 0) return 0; // multiple debt assets not allowed
+
+            debt += toNum(vaultList[i].debt, vaultList[i].decimals) * vaultList[i].price;
+            collateral += toNum(vaultList[i].assets, vaultList[i].decimals) * vaultList[i].price * ltvMatrix[i][i];
+        }
+
+        return debt > 0 ? collateral / debt : Infinity;
+    };
+
+    console.log(calcHealthScore());
 }

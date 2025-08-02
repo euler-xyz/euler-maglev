@@ -306,6 +306,7 @@ export class GlobalContext {
         let debtValue = this.amountToValue(vaultAddr, debt);
 
         return {
+            vaultAddr,
             shares,
             assets,
             value,
