@@ -1175,8 +1175,6 @@ function calculateLimits(params, origVaultList, ltvMatrix) {
         else v.value = v.assets;
     }
 
-    console.log("PARAMS",params);
-    console.log("ORIGVL",origVaultList);
     let v0Index, v1Index;
 
     for (let i = 0; i < origVaultList.length; i++) {
@@ -1259,15 +1257,59 @@ function calculateLimits(params, origVaultList, ltvMatrix) {
         inVault.price *= newPriceAB / equilibriumPriceAB;
         outVault.price *= equilibriumPriceAB / newPriceAB;
 
-        return vaultList;
+        return [vaultList, newPriceAB];
     };
 
-    //for (let i = 0n; i < 10n; i++) {
-        let r0 = params.equilibriumReserve0 / 3n;
-        let r1 = params.equilibriumReserve1 / 3n;
-        let amountOut = r1 - 1n;
+    let searchThreshold = (r0, r1, asset0IsInput) => {
+        let threshold = 1.1;
+
+        let lower = 0n;
+        let upper = asset0IsInput ? r1 : r0;
+        let newVaultList;
+        let price;
+
+        for (let i = 0; i < 1000; i++) {
+            let mid = (lower + upper) / 2n;
+
+            [newVaultList, price] = simSwap(r0, r1, mid, asset0IsInput);
+            if (price < 1) price = 1 / price;
+
+            if (price > threshold) upper = mid;
+            else lower = mid;
+        }
+
+        return [newVaultList, price];
+    };
+
+    let findMaxReserve = (asset0IsInput) => {
+        let lower = 0n;
+        let upper = 2000000n * 10n ** BigInt(origVaultList[asset0IsInput ? v1Index : v0Index].decimals);
+
+        for (let i = 0; i < 10; i++) {
+            let mid = (lower + upper) / 2n;
+
+            let [newVaultList, price] = searchThreshold(mid, mid, asset0IsInput);
+            let health = calcHealthScore(newVaultList);
+
+            if (health < 1) upper = mid;
+            else lower = mid;
+        }
+
+        return lower;
+    };
+
+    console.log("r0", findMaxReserve(false));
+    console.log("r1", findMaxReserve(true));
+
+/*
+    console.log('---------------------------');
+    for (let i = 1n; i < 10n; i++) {
+        let r0 = params.equilibriumReserve0 / 2n;
+        let r1 = params.equilibriumReserve1 / 2n;
+        let amountOut = r1 * i / 10n;
         let newVaultList = simSwap(r0, r1, amountOut, true);
         console.log("NVL", newVaultList);
         console.log("NEW HEALTH", calcHealthScore(newVaultList));
-    //}
+    }
+        */
 }
