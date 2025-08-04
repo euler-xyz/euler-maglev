@@ -1191,6 +1191,12 @@ function calculateLimits(params, origVaultList, ltvMatrix) {
         return parseFloat(formatUnits(bn, decimals));
     };
 
+    let scaleByDecimals = (val, dir) => {
+        let dec0 = 10n**(BigInt(origVaultList[v0Index].decimals));
+        let dec1 = 10n**(BigInt(origVaultList[v1Index].decimals));
+        return dir ? val * dec0 / dec1 : val * dec1 / dec0;
+    };
+
     let calcHealthScore = (vaultList) => {
         let debt = 0;
         let debtIndex;
@@ -1220,8 +1226,7 @@ function calculateLimits(params, origVaultList, ltvMatrix) {
         for (let v of origVaultList) vaultList.push({ ...v, });
 
         let equilibriumPriceAB = params.priceX * c1e27 / params.priceY;
-        // FIXME: scaleDecimals!
-        equilibriumPriceAB = toNum(equilibriumPriceAB, 27);
+        equilibriumPriceAB = toNum(scaleByDecimals(equilibriumPriceAB, false), 27);
         if (!asset0IsInput) equilibriumPriceAB = 1 / equilibriumPriceAB;
 
         let newReserve0, newReserve1;
@@ -1249,9 +1254,7 @@ function calculateLimits(params, origVaultList, ltvMatrix) {
             equilibriumReserve1: reserve1,
         }, newReserve0, newReserve1);
 
-        // FIXME: scaleDecimals!
-
-        newPriceAB = toNum(newPriceAB, 27);
+        newPriceAB = toNum(scaleByDecimals(newPriceAB, false), 27);
         if (!asset0IsInput) newPriceAB = 1 / newPriceAB;
 
         inVault.price *= newPriceAB / equilibriumPriceAB;
@@ -1261,7 +1264,7 @@ function calculateLimits(params, origVaultList, ltvMatrix) {
     };
 
     let searchThreshold = (r0, r1, asset0IsInput) => {
-        let threshold = 1.1;
+        let threshold = 0.5;
 
         let lower = 0n;
         let upper = asset0IsInput ? r1 : r0;
@@ -1272,20 +1275,23 @@ function calculateLimits(params, origVaultList, ltvMatrix) {
             let mid = (lower + upper) / 2n;
 
             [newVaultList, price] = simSwap(r0, r1, mid, asset0IsInput);
-            if (price < 1) price = 1 / price;
 
-            if (price > threshold) upper = mid;
+            if (price < (1 - threshold)) upper = mid;
             else lower = mid;
+
+            let deviation = price / threshold;
+            if (deviation <= 1 && deviation >= 0.99) break;
         }
 
         return [newVaultList, price];
     };
 
     let findMaxReserve = (asset0IsInput) => {
+        // FIXME: better starting upper bound
         let lower = 0n;
-        let upper = 2000000n * 10n ** BigInt(origVaultList[asset0IsInput ? v1Index : v0Index].decimals);
+        let upper = 1000000000n * 10n ** BigInt(origVaultList[asset0IsInput ? v1Index : v0Index].decimals);
 
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < 100; i++) {
             let mid = (lower + upper) / 2n;
 
             let [newVaultList, price] = searchThreshold(mid, mid, asset0IsInput);
@@ -1293,6 +1299,8 @@ function calculateLimits(params, origVaultList, ltvMatrix) {
 
             if (health < 1) upper = mid;
             else lower = mid;
+
+            if (health > 1 && health < 1.00001) break;
         }
 
         return lower;
