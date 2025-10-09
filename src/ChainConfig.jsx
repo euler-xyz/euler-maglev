@@ -45,6 +45,15 @@ export function getChainConfigs() {
             chain.addresses.maglevAddrs = {
                 maglevLens: '0x1F5fDa12a026729e2635978324d2f98d839859f9',
             };
+        } else if (chain.chainId === 9745) {
+            chain.addresses.eulerSwapAddrs = {
+                eulerSwapFactory: '0xD7aA03104c2CCaC58acB00CbE90865FA64BbE77D',
+                eulerSwapPeriphery: '0x1472ebB000190275B5e28733e45a2614F1C3F41C',
+            };
+
+            chain.addresses.maglevAddrs = {
+                maglevLens: '0x575734B8ADc00DfA2958d236fB3F14bCD171DEAf',
+            };
         } else if (chain.chainId === 43114) {
             chain.addresses.eulerSwapAddrs = {
                 eulerSwapFactory: '0x8A1D3a4850ed7deeC9003680Cf41b8E75D27e440',
