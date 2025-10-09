@@ -94,7 +94,7 @@ export function getWagmiChainConfigs() {
         let chainName = config.viemName || config.name;
         if (chainName === 'dev') chainName = 'foundry';
 
-        let chain = viemChains[chainName];
+        let chain = Object.values(viemChains).find(chain => chain.id == config.chainId);
         if (config.status === 'testing') continue;
         if (!chain) throw Error(`no viem entry found for chain ${config.name}`);
 
