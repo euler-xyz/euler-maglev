@@ -77,7 +77,7 @@
       "name": "getEulerSwaps",
       "inputs": [
         {
-          "name": "eulerSwapFactory",
+          "name": "eulerSwapRegistry",
           "type": "address",
           "internalType": "address"
         }
@@ -94,17 +94,27 @@
               "internalType": "address"
             },
             {
-              "name": "params",
+              "name": "sParams",
               "type": "tuple",
-              "internalType": "struct IEulerSwap.Params",
+              "internalType": "struct IEulerSwap.StaticParams",
               "components": [
                 {
-                  "name": "vault0",
+                  "name": "supplyVault0",
                   "type": "address",
                   "internalType": "address"
                 },
                 {
-                  "name": "vault1",
+                  "name": "supplyVault1",
+                  "type": "address",
+                  "internalType": "address"
+                },
+                {
+                  "name": "borrowVault0",
+                  "type": "address",
+                  "internalType": "address"
+                },
+                {
+                  "name": "borrowVault1",
                   "type": "address",
                   "internalType": "address"
                 },
@@ -113,6 +123,28 @@
                   "type": "address",
                   "internalType": "address"
                 },
+                {
+                  "name": "feeRecipient",
+                  "type": "address",
+                  "internalType": "address"
+                },
+                {
+                  "name": "protocolFeeRecipient",
+                  "type": "address",
+                  "internalType": "address"
+                },
+                {
+                  "name": "protocolFee",
+                  "type": "uint64",
+                  "internalType": "uint64"
+                }
+              ]
+            },
+            {
+              "name": "dParams",
+              "type": "tuple",
+              "internalType": "struct IEulerSwap.DynamicParams",
+              "components": [
                 {
                   "name": "equilibriumReserve0",
                   "type": "uint112",
@@ -124,37 +156,57 @@
                   "internalType": "uint112"
                 },
                 {
+                  "name": "minReserve0",
+                  "type": "uint112",
+                  "internalType": "uint112"
+                },
+                {
+                  "name": "minReserve1",
+                  "type": "uint112",
+                  "internalType": "uint112"
+                },
+                {
                   "name": "priceX",
-                  "type": "uint256",
-                  "internalType": "uint256"
+                  "type": "uint80",
+                  "internalType": "uint80"
                 },
                 {
                   "name": "priceY",
-                  "type": "uint256",
-                  "internalType": "uint256"
+                  "type": "uint80",
+                  "internalType": "uint80"
                 },
                 {
                   "name": "concentrationX",
-                  "type": "uint256",
-                  "internalType": "uint256"
+                  "type": "uint64",
+                  "internalType": "uint64"
                 },
                 {
                   "name": "concentrationY",
-                  "type": "uint256",
-                  "internalType": "uint256"
+                  "type": "uint64",
+                  "internalType": "uint64"
                 },
                 {
-                  "name": "fee",
-                  "type": "uint256",
-                  "internalType": "uint256"
+                  "name": "fee0",
+                  "type": "uint64",
+                  "internalType": "uint64"
                 },
                 {
-                  "name": "protocolFee",
-                  "type": "uint256",
-                  "internalType": "uint256"
+                  "name": "fee1",
+                  "type": "uint64",
+                  "internalType": "uint64"
                 },
                 {
-                  "name": "protocolFeeRecipient",
+                  "name": "expiration",
+                  "type": "uint40",
+                  "internalType": "uint40"
+                },
+                {
+                  "name": "swapHookedOperations",
+                  "type": "uint8",
+                  "internalType": "uint8"
+                },
+                {
+                  "name": "swapHook",
                   "type": "address",
                   "internalType": "address"
                 }
@@ -234,7 +286,7 @@
       "name": "getMyEulerSwap",
       "inputs": [
         {
-          "name": "eulerSwapFactory",
+          "name": "eulerSwapRegistry",
           "type": "address",
           "internalType": "address"
         },
@@ -256,17 +308,27 @@
               "internalType": "address"
             },
             {
-              "name": "params",
+              "name": "sParams",
               "type": "tuple",
-              "internalType": "struct IEulerSwap.Params",
+              "internalType": "struct IEulerSwap.StaticParams",
               "components": [
                 {
-                  "name": "vault0",
+                  "name": "supplyVault0",
                   "type": "address",
                   "internalType": "address"
                 },
                 {
-                  "name": "vault1",
+                  "name": "supplyVault1",
+                  "type": "address",
+                  "internalType": "address"
+                },
+                {
+                  "name": "borrowVault0",
+                  "type": "address",
+                  "internalType": "address"
+                },
+                {
+                  "name": "borrowVault1",
                   "type": "address",
                   "internalType": "address"
                 },
@@ -275,6 +337,28 @@
                   "type": "address",
                   "internalType": "address"
                 },
+                {
+                  "name": "feeRecipient",
+                  "type": "address",
+                  "internalType": "address"
+                },
+                {
+                  "name": "protocolFeeRecipient",
+                  "type": "address",
+                  "internalType": "address"
+                },
+                {
+                  "name": "protocolFee",
+                  "type": "uint64",
+                  "internalType": "uint64"
+                }
+              ]
+            },
+            {
+              "name": "dParams",
+              "type": "tuple",
+              "internalType": "struct IEulerSwap.DynamicParams",
+              "components": [
                 {
                   "name": "equilibriumReserve0",
                   "type": "uint112",
@@ -286,37 +370,57 @@
                   "internalType": "uint112"
                 },
                 {
+                  "name": "minReserve0",
+                  "type": "uint112",
+                  "internalType": "uint112"
+                },
+                {
+                  "name": "minReserve1",
+                  "type": "uint112",
+                  "internalType": "uint112"
+                },
+                {
                   "name": "priceX",
-                  "type": "uint256",
-                  "internalType": "uint256"
+                  "type": "uint80",
+                  "internalType": "uint80"
                 },
                 {
                   "name": "priceY",
-                  "type": "uint256",
-                  "internalType": "uint256"
+                  "type": "uint80",
+                  "internalType": "uint80"
                 },
                 {
                   "name": "concentrationX",
-                  "type": "uint256",
-                  "internalType": "uint256"
+                  "type": "uint64",
+                  "internalType": "uint64"
                 },
                 {
                   "name": "concentrationY",
-                  "type": "uint256",
-                  "internalType": "uint256"
+                  "type": "uint64",
+                  "internalType": "uint64"
                 },
                 {
-                  "name": "fee",
-                  "type": "uint256",
-                  "internalType": "uint256"
+                  "name": "fee0",
+                  "type": "uint64",
+                  "internalType": "uint64"
                 },
                 {
-                  "name": "protocolFee",
-                  "type": "uint256",
-                  "internalType": "uint256"
+                  "name": "fee1",
+                  "type": "uint64",
+                  "internalType": "uint64"
                 },
                 {
-                  "name": "protocolFeeRecipient",
+                  "name": "expiration",
+                  "type": "uint40",
+                  "internalType": "uint40"
+                },
+                {
+                  "name": "swapHookedOperations",
+                  "type": "uint8",
+                  "internalType": "uint8"
+                },
+                {
+                  "name": "swapHook",
                   "type": "address",
                   "internalType": "address"
                 }

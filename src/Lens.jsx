@@ -263,6 +263,8 @@ function decodeVaultsPersonalInfo(me, subAccountBitmask, vaultAddrs, raw) {
 }
 
 export function useVaultsPersonalInfo(me, vaultAddrs) {
+console.log("ME",me);
+console.log("VA",vaultAddrs);
     let { data: currChain, isPending: pending1 } = useEulerChain();
     let client = usePublicClient();
 
@@ -349,7 +351,7 @@ export function useMyEulerSwap(myAddr) {
                 address: currChain.addresses.maglevAddrs.maglevLens,
                 abi: maglevLensAbi.abi,
                 functionName: 'getMyEulerSwap',
-                args: [currChain.addresses.eulerSwapAddrs.eulerSwapFactory, myAddr],
+                args: [currChain.addresses.eulerSwapAddrs.eulerSwapRegistry, myAddr],
             });
 
             return raw;
@@ -372,9 +374,10 @@ export function useEulerSwapData() {
                 address: currChain.addresses.maglevAddrs.maglevLens,
                 abi: maglevLensAbi.abi,
                 functionName: 'getEulerSwaps',
-                args: [currChain.addresses.eulerSwapAddrs.eulerSwapFactory],
+                args: [currChain.addresses.eulerSwapAddrs.eulerSwapRegistry],
             });
 
+            console.log("DING",raw);
             return raw;
         },
     });

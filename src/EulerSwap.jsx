@@ -132,7 +132,8 @@ function decodeRawParams(ctx, vault0, vault1, navMidpoint, rawParams, currReserv
         concentrationX: rawParams.concentrationX,
         concentrationY: rawParams.concentrationY,
         price: parse18Scale(scaleDecimals(ctx, vault0, vault1, c1e18 * rawParams.priceX / rawParams.priceY)),
-        fee: rawParams.fee,
+        fee0: rawParams.fee0,
+        fee1: rawParams.fee1,
         curveLeft,
         curveMid,
         curveRight,
@@ -193,21 +194,23 @@ function scaleDecimals(ctx, vault0, vault1, val) {
 
 export function EulerSwapParamsTable(props) {
     let ctx = props.ctx;
-    let params = props.params;
+    let sParams = props.sParams;
+    let dParams = props.dParams;
     let state = props.state;
 
     let priceNum;
-    if (params.priceX !== undefined) {
-        priceNum = parseFloat(formatUnits(scaleDecimals(ctx, params.vault0, params.vault1, 10n**18n * params.priceX) / params.priceY, 18));
+    if (dParams.priceX !== undefined) {
+        priceNum = parseFloat(formatUnits(scaleDecimals(ctx, sParams.supplyVault0, sParams.supplyVault1, 10n**18n * dParams.priceX) / dParams.priceY, 18));
     }
 
-    let feeRendered = params.fee == undefined ? '-' : ctx.render18ScalePercent(params.fee);
+    let fee0Rendered = dParams.fee0 == undefined ? '-' : ctx.render18ScalePercent(dParams.fee0);
+    let fee1Rendered = dParams.fee1 == undefined ? '-' : ctx.render18ScalePercent(dParams.fee1);
 
     let summaryRows = [
         {
             desc: <b>Equilibrium Reserves</b>,
-            v0: ctx.renderUnderlying(params.vault0, params.equilibriumReserve0),
-            v1: ctx.renderUnderlying(params.vault1, params.equilibriumReserve1),
+            v0: ctx.renderUnderlying(sParams.supplyVault0, dParams.equilibriumReserve0),
+            v1: ctx.renderUnderlying(sParams.supplyVault1, dParams.equilibriumReserve1),
         },
         {
             desc: <b>Price at Equilibrium</b>,
@@ -216,28 +219,28 @@ export function EulerSwapParamsTable(props) {
         },
         {
             desc: <b>Concentration</b>,
-            v0: params.concentrationX === undefined ? '-' : ctx.render18ScalePercent(params.concentrationX),
-            v1: params.concentrationY === undefined ? '-' : ctx.render18ScalePercent(params.concentrationY),
+            v0: dParams.concentrationX === undefined ? '-' : ctx.render18ScalePercent(dParams.concentrationX),
+            v1: dParams.concentrationY === undefined ? '-' : ctx.render18ScalePercent(dParams.concentrationY),
         },
         {
             desc: <b>LP Fee</b>,
-            v0: feeRendered,
-            v1: feeRendered,
+            v0: fee0Rendered,
+            v1: fee1Rendered,
         },
     ];
 
     if (state) {
         summaryRows.unshift({
             desc: <b>Current Reserves</b>,
-            v0: state.currReserve0 === undefined ? '-' : ctx.renderUnderlying(params.vault0, state.currReserve0),
-            v1: state.currReserve1 === undefined ? '-' : ctx.renderUnderlying(params.vault1, state.currReserve1),
+            v0: state.currReserve0 === undefined ? '-' : ctx.renderUnderlying(sParams.supplyVault0, state.currReserve0),
+            v1: state.currReserve1 === undefined ? '-' : ctx.renderUnderlying(sParams.supplyVault1, state.currReserve1),
         });
     }
 
     return <DataTable size="small" value={summaryRows}>
         <Column field="desc" header="" style={{ width: '20%' }}></Column>
-        <Column field="v0" header={ctx.renderVaultName(params.vault0)} style={{ width: '40%' }}></Column>
-        <Column field="v1" header={ctx.renderVaultName(params.vault1)} style={{ width: '40%' }}></Column>
+        <Column field="v0" header={ctx.renderVaultName(sParams.supplyVault0)} style={{ width: '40%' }}></Column>
+        <Column field="v1" header={ctx.renderVaultName(sParams.supplyVault1)} style={{ width: '40%' }}></Column>
     </DataTable>
 }
 
@@ -261,6 +264,7 @@ export function EulerSwapViz(props) {
 
     let { data: enteredMarkets, error: enteredMarketsError, isError: enteredMarketsIsError } = Lens.useMyEnteredMarkets(props.account);
 
+    console.log(props);
     let seenVaults = {};
     if (enteredMarkets) {
         for (let v of enteredMarkets.collaterals) seenVaults[v] = true;
@@ -382,10 +386,11 @@ export function EulerSwapViz(props) {
     };
 
     if (!params) {
-        setParams(props.initialParams ? decodeRawParams(ctx, props.vault0, props.vault1, navMidpoint, props.initialParams, props.currReserves) : {
+        setParams(props.initialDParams ? decodeRawParams(ctx, props.vault0, props.vault1, navMidpoint, props.initialDParams, props.currReserves) : {
             concentrationX: parseUnits("0.9", 18),
             concentrationY: parseUnits("0.9", 18),
-            fee: parseUnits("0.001", 18),
+            fee0: parseUnits("0.001", 18),
+            fee1: parseUnits("0.001", 18),
             price: loadPrice(),
             curveLeft: limit0,
             curveMid: navMidpoint,
@@ -396,7 +401,8 @@ export function EulerSwapViz(props) {
 
     let setConcentrationX = (v) => setParams({ ...params, concentrationX: v });
     let setConcentrationY = (v) => setParams({ ...params, concentrationY: v });
-    let setFee = (v) => setParams({ ...params, fee: v });
+    let setFee0 = (v) => setParams({ ...params, fee0: v });
+    let setFee1 = (v) => setParams({ ...params, fee1: v });
     let setPrice = (v) => setParams({ ...params, price: v });
 
     let limit0Pixel = fundSpaceToPixel(width, domain, limit0);
@@ -441,21 +447,31 @@ export function EulerSwapViz(props) {
 
     let parsedPrice = LibEulerSwap.computePriceFraction(params.price, ctx.vaultDecimals(props.vault0), ctx.vaultDecimals(props.vault1));
 
-    let paramsRaw = {
-        vault0: props.vault0,
-        vault1: props.vault1,
+    let sParamsRaw = {
+        supplyVault0: props.vault0,
+        supplyVault1: props.vault1,
+        borrowVault0: props.vault0,
+        borrowVault1: props.vault1,
         eulerAccount: props.account,
+        feeRecipient: zeroAddress,
+        protocolFeeRecipient: zeroAddress,
+        protocolFee: 0n,
+    };
 
+    let dParamsRaw = {
         equilibriumReserve0: ctx.valueToAmount(props.vault0, params.curveRight - params.curveMid),
         equilibriumReserve1: ctx.valueToAmount(props.vault1, params.curveMid - params.curveLeft),
+        minReserve0: 0n,
+        minReserve1: 0n,
         priceX: parsedPrice[0],
         priceY: parsedPrice[1],
         concentrationX: params.concentrationX,
         concentrationY: params.concentrationY,
-
-        fee: params.fee,
-        protocolFee: 0n,
-        protocolFeeRecipient: zeroAddress,
+        fee0: params.fee0,
+        fee1: params.fee1,
+        expiration: 0n,
+        swapHookedOperations: 0n,
+        swapHook: zeroAddress,
     };
 
     let initialStateRaw = {};
@@ -464,35 +480,35 @@ export function EulerSwapViz(props) {
         // Only perform calculations if all required parameters are defined
         if (params.concentrationX !== undefined && params.concentrationY !== undefined && parsedPrice[0] && parsedPrice[1]) {
             if (Math.abs(navMidpoint - params.curveMid) < 0.0000001) {
-                initialStateRaw.currReserve0 = paramsRaw.equilibriumReserve0;
-                initialStateRaw.currReserve1 = paramsRaw.equilibriumReserve1;
+                initialStateRaw.reserve0 = dParamsRaw.equilibriumReserve0;
+                initialStateRaw.reserve1 = dParamsRaw.equilibriumReserve1;
             } else if (navMidpoint > params.curveMid) {
-                initialStateRaw.currReserve0 = paramsRaw.equilibriumReserve0 - ctx.valueToAmount(props.vault0, navMidpoint - params.curveMid);
-                initialStateRaw.currReserve1 = LibEulerSwap.f(initialStateRaw.currReserve0, paramsRaw.priceX, paramsRaw.priceY, paramsRaw.equilibriumReserve0, paramsRaw.equilibriumReserve1, paramsRaw.concentrationX);
+                initialStateRaw.reserve0 = dParamsRaw.equilibriumReserve0 - ctx.valueToAmount(props.vault0, navMidpoint - params.curveMid);
+                initialStateRaw.reserve1 = LibEulerSwap.f(initialStateRaw.reserve0, dParamsRaw.priceX, dParamsRaw.priceY, dParamsRaw.equilibriumReserve0, dParamsRaw.equilibriumReserve1, dParamsRaw.concentrationX);
             } else {
-                initialStateRaw.currReserve1 = paramsRaw.equilibriumReserve1 - ctx.valueToAmount(props.vault1, params.curveMid - navMidpoint);
-                initialStateRaw.currReserve0 = LibEulerSwap.f(initialStateRaw.currReserve1, paramsRaw.priceY, paramsRaw.priceX, paramsRaw.equilibriumReserve1, paramsRaw.equilibriumReserve0, paramsRaw.concentrationY);
+                initialStateRaw.reserve1 = dParamsRaw.equilibriumReserve1 - ctx.valueToAmount(props.vault1, params.curveMid - navMidpoint);
+                initialStateRaw.reserve0 = LibEulerSwap.f(initialStateRaw.reserve1, dParamsRaw.priceY, dParamsRaw.priceX, dParamsRaw.equilibriumReserve1, dParamsRaw.equilibriumReserve0, dParamsRaw.concentrationY);
             }
 
-            [initialStateRaw.currReserve0, initialStateRaw.currReserve1] = LibEulerSwap.tightenToCurve(paramsRaw, initialStateRaw.currReserve0, initialStateRaw.currReserve1);
+            [initialStateRaw.reserve0, initialStateRaw.reserve1] = LibEulerSwap.tightenToCurve(dParamsRaw, initialStateRaw.reserve0, initialStateRaw.reserve1);
         } else {
             // Set to undefined if parameters are not valid for calculation
-            initialStateRaw.currReserve0 = initialStateRaw.currReserve1 = undefined;
+            initialStateRaw.reserve0 = initialStateRaw.reserve1 = undefined;
         }
     } catch(e) {
         console.warn(e);
-        initialStateRaw.currReserve0 = initialStateRaw.currReserve1 = undefined;
+        initialStateRaw.reserve0 = initialStateRaw.reserve1 = undefined;
     }
 
 
     let installEulerSwap = async () => {
         // Validate that all required parameters are defined before installing
-        if (params.concentrationX === undefined || params.concentrationY === undefined || params.fee === undefined || !parsedPrice[0] || !parsedPrice[1]) {
+        if (params.concentrationX === undefined || params.concentrationY === undefined || params.fee0 === undefined || params.fee1 === undefined || !parsedPrice[0] || !parsedPrice[1]) {
             console.warn('Cannot install EulerSwap: Required parameters are undefined or invalid');
             return;
         }
         
-        await EulerSwapUtils.deployEulerSwap(ctx, paramsRaw, initialStateRaw, props.currReserves);
+        await EulerSwapUtils.deployEulerSwap(ctx, sParamsRaw, dParamsRaw, initialStateRaw, props.currReserves);
         if (props.onInstall) props.onInstall();
     };
 
@@ -512,7 +528,7 @@ export function EulerSwapViz(props) {
         let o = {};
 
         // Return early if required parameters are undefined
-        if (paramsRaw.concentrationX === undefined || paramsRaw.concentrationY === undefined || !paramsRaw.priceX || !paramsRaw.priceY) {
+        if (dParamsRaw.concentrationX === undefined || dParamsRaw.concentrationY === undefined || !dParamsRaw.priceX || !dParamsRaw.priceY) {
             return {
                 eqPrice: 0,
                 xyPrice: 0,
@@ -521,18 +537,20 @@ export function EulerSwapViz(props) {
             };
         }
 
-        o.eqPrice = ctx.render18Scale(scaleDecimals(ctx, paramsRaw.vault0, paramsRaw.vault1, 10n**18n * paramsRaw.priceX) / paramsRaw.priceY);
+        console.log("SPRAW",sParamsRaw);
+        console.log("DPRAW",dParamsRaw);
+        o.eqPrice = ctx.render18Scale(scaleDecimals(ctx, sParamsRaw.supplyVault0, sParamsRaw.supplyVault1, 10n**18n * dParamsRaw.priceX) / dParamsRaw.priceY);
 
         if (fundSpacePoint >= 0) {
-            let x = paramsRaw.equilibriumReserve0 - ctx.valueToAmount(paramsRaw.vault0, fundSpacePoint);
+            let x = dParamsRaw.equilibriumReserve0 - ctx.valueToAmount(sParamsRaw.supplyVault0, fundSpacePoint);
             if (x === 0n) return o;
-            o.xyPrice = ctx.render18Scale(scaleDecimals(ctx, paramsRaw.vault0, paramsRaw.vault1, -LibEulerSwap.df_dx(x, paramsRaw.priceX, paramsRaw.priceY, paramsRaw.equilibriumReserve0, paramsRaw.concentrationX)));
+            o.xyPrice = ctx.render18Scale(scaleDecimals(ctx, sParamsRaw.supplyVault0, sParamsRaw.supplyVault1, -LibEulerSwap.df_dx(x, dParamsRaw.priceX, dParamsRaw.priceY, dParamsRaw.equilibriumReserve0, dParamsRaw.concentrationX)));
             o.yxPrice = 1/o.xyPrice;
             o.priceImpact = 1 - (o.eqPrice / o.xyPrice);
         } else {
-            let x = paramsRaw.equilibriumReserve1 - ctx.valueToAmount(paramsRaw.vault1, -fundSpacePoint);
+            let x = dParamsRaw.equilibriumReserve1 - ctx.valueToAmount(sParamsRaw.supplyVault1, -fundSpacePoint);
             if (x === 0n) return o;
-            o.yxPrice = ctx.render18Scale(scaleDecimals(ctx, paramsRaw.vault1, paramsRaw.vault0, -LibEulerSwap.df_dx(x, paramsRaw.priceY, paramsRaw.priceX, paramsRaw.equilibriumReserve1, paramsRaw.concentrationY)));
+            o.yxPrice = ctx.render18Scale(scaleDecimals(ctx, sParamsRaw.supplyVault1, sParamsRaw.supplyVault0, -LibEulerSwap.df_dx(x, dParamsRaw.priceY, dParamsRaw.priceX, dParamsRaw.equilibriumReserve1, dParamsRaw.concentrationY)));
             o.xyPrice = 1/o.yxPrice;
             o.priceImpact = 1 - (o.xyPrice / o.eqPrice);
         }
@@ -612,9 +630,9 @@ export function EulerSwapViz(props) {
 
     let genGradient = (size) => {
         if (size === 0n) return '';
-        if (size > 0n && paramsRaw.concentrationX === undefined) return 'orange';
-        if (size < 0n && paramsRaw.concentrationY === undefined) return 'orange';
-        if (!paramsRaw.priceX || !paramsRaw.priceY) return 'orange';
+        if (size > 0n && dParamsRaw.concentrationX === undefined) return 'orange';
+        if (size < 0n && dParamsRaw.concentrationY === undefined) return 'orange';
+        if (!dParamsRaw.priceX || !dParamsRaw.priceY) return 'orange';
 
         let divisions = 10;
 
@@ -633,17 +651,23 @@ export function EulerSwapViz(props) {
     };
 
     function renderRawParams() {
-        let o = { ...paramsRaw, };
-        for (let k of Object.keys(o)) {
-            if (isBig(o[k])) o[k] = o[k].toString();
-        }
+        let render = (p) => {
+            let o = { ...p, };
+            for (let k of Object.keys(o)) {
+                if (isBig(o[k])) o[k] = o[k].toString();
+            }
 
-        let str = JSON.stringify(o, ' ', 4);
-        if (rawDialogSolidityMode) str = str.replaceAll('"', '');
+            let str = JSON.stringify(o, ' ', 4);
+            if (rawDialogSolidityMode) str = str.replaceAll('"', '');
+            return str;
+        };
 
         return <div>
-            Params:
-            <pre>{str}</pre>
+            Static Params:
+            <pre>{render(sParamsRaw)}</pre>
+
+            Dynamic Params:
+            <pre>{render(dParamsRaw)}</pre>
         </div>
     }
 
@@ -663,8 +687,12 @@ export function EulerSwapViz(props) {
             </div>
 
             <div className="flex align-items-center justify-content-around">
-                <PercentInput label="Fee" id="fee-input-field" default={params.fee} onChange={e => setFee(e)} />
+                <PercentInput label="Fee0" id="fee-input-field" default={params.fee0} onChange={e => setFee0(e)} />
 
+                <PercentInput label="Fee1" id="fee-input-field" default={params.fee1} onChange={e => setFee1(e)} />
+            </div>
+
+            <div className="flex align-items-center justify-content-around">
                 <div className="field">
                     <label htmlFor="price-input">Price at Equilibrium</label>
                     <div className="p-inputgroup flex-1">
@@ -729,7 +757,7 @@ export function EulerSwapViz(props) {
                 {renderPriceInfo(navMidpoint)}
             </div>
             <div className="flex-grow-1 pl-4 pr-4">
-                <EulerSwapParamsTable ctx={ctx} params={paramsRaw} state={initialStateRaw} />
+                <EulerSwapParamsTable ctx={ctx} sParams={sParamsRaw} dParams={dParamsRaw} state={initialStateRaw} />
             </div>
         </div>
 
@@ -743,7 +771,7 @@ export function EulerSwapViz(props) {
             </div>}
 
             <div className="mt-4 flex align-items-center justify-content-center">
-                <Button className="mr-6" label="Install" disabled={params.concentrationX === undefined || params.concentrationY === undefined || params.fee === undefined || !parsedPrice[0] || !parsedPrice[1]} onClick={installEulerSwap} />
+                <Button className="mr-6" label="Install" disabled={params.concentrationX === undefined || params.concentrationY === undefined || params.fee0 === undefined || params.fee1 === undefined || !parsedPrice[0] || !parsedPrice[1]} onClick={installEulerSwap} />
                 <Button className="mr-6" label="Show Raw" onClick={() => setShowRawDialog(true)} />
             </div>
         </div>}
@@ -832,11 +860,11 @@ export function EulerSwapPanel(props) {
     };
 
     let doEdit = () => {
-        setVaults([myEulerSwap.params.vault0, myEulerSwap.params.vault1]);
+        setVaults([myEulerSwap.sParams.supplyVault0, myEulerSwap.sParams.supplyVault1]);
         setUiState('edit-existing');
     };
 
-    return <Panel header="EulerSwap" className="mt-6">
+    return <Panel header={<span>EulerSwap <span style={{ color: 'black', backgroundColor: 'green', borderRadius: 6, padding: 6, }}>2</span></span>} className="mt-6">
         <div className="flex justify-content-evenly mt-4">
             {uiState === 'default' && <>
                 <Button label="New" onClick={() => setUiState('new-choose-vaults')} />
@@ -850,7 +878,7 @@ export function EulerSwapPanel(props) {
         </div>
 
         {uiState === 'default' && existing && <div style={{ width: '100%', }}>
-            <EulerSwapViz viewMode ctx={ctx} account={myEulerSwap.params.eulerAccount} existingOperator={existing} vault0={myEulerSwap.params.vault0} vault1={myEulerSwap.params.vault1} initialParams={myEulerSwap.params} currReserves={currReserves} />
+            <EulerSwapViz viewMode ctx={ctx} account={myEulerSwap.sParams.eulerAccount} existingOperator={existing} vault0={myEulerSwap.sParams.supplyVault0} vault1={myEulerSwap.sParams.supplyVault1} initialDParams={myEulerSwap.dParams} currReserves={currReserves} />
         </div>}
 
         {uiState === 'new-choose-vaults' && <VaultPairChooser ctx={ctx} onChoose={onChooseVaults} />}
@@ -860,7 +888,7 @@ export function EulerSwapPanel(props) {
         </div>}
 
         {uiState === 'edit-existing' && <div style={{ width: '100%', }}>
-            <EulerSwapViz ctx={ctx} account={ctx.myAddr} vault0={vaults[0]} vault1={vaults[1]} initialParams={existing && myEulerSwap.params} currReserves={existing && currReserves} onInstall={onInstall} />
+            <EulerSwapViz ctx={ctx} account={ctx.myAddr} vault0={vaults[0]} vault1={vaults[1]} initialDParams={existing && myEulerSwap.dParams} currReserves={existing && currReserves} onInstall={onInstall} />
         </div>}
     </Panel>
 }
@@ -938,8 +966,8 @@ export function EulerSwapBrowse(props) {
     let seenVaults = {};
 
     for (let i = 0; i < eulerSwapData.length; i++) {
-        seenVaults[eulerSwapData[i].params.vault0] = true;
-        seenVaults[eulerSwapData[i].params.vault1] = true;
+        seenVaults[eulerSwapData[i].sParams.supplyVault0] = true;
+        seenVaults[eulerSwapData[i].sParams.supplyVault1] = true;
     }
 
     if (!ctx.addExtraVaults(seenVaults)) return 'Loading...';
@@ -971,31 +999,31 @@ export function EulerSwapBrowse(props) {
 
         let currPrice;
         try {
-            currPrice = LibEulerSwap.getCurrentPrice(e.params, e.reserve0, e.reserve1);
+            currPrice = LibEulerSwap.getCurrentPrice(e.dParams, e.reserve0, e.reserve1);
         } catch(e) {}
 
         let row = {
-            account: <Link to={`/euler-swap/${e.params.eulerAccount}`}>{e.params.eulerAccount.substr(0,8)}...{e.params.eulerAccount.substr(-2)}</Link>,
-            vault0: ctx.renderVaultName(e.params.vault0),
-            vault1: ctx.renderVaultName(e.params.vault1),
+            account: <Link to={`/euler-swap/${e.sParams.eulerAccount}`}>{e.sParams.eulerAccount.substr(0,8)}...{e.sParams.eulerAccount.substr(-2)}</Link>,
+            vault0: ctx.renderVaultName(e.sParams.supplyVault0),
+            vault1: ctx.renderVaultName(e.sParams.supplyVault1),
 
-            amount0: ctx.renderUnderlying(e.params.vault0, e.outLimit10),
-            amount1: ctx.renderUnderlying(e.params.vault1, e.outLimit01),
+            amount0: ctx.renderUnderlying(e.sParams.supplyVault0, e.outLimit10),
+            amount1: ctx.renderUnderlying(e.sParams.supplyVault1, e.outLimit01),
 
             liquidity: 0n,
 
             price: currPrice !== undefined ? <div>
-                {ctx.render18Scale(scaleDecimals(ctx, e.params.vault0, e.params.vault1, currPrice))}<br/>
-                {ctx.render18Scale(scaleDecimals(ctx, e.params.vault1, e.params.vault0, c1e18 * c1e18 / currPrice))}
+                {ctx.render18Scale(scaleDecimals(ctx, e.sParams.supplyVault0, e.sParams.supplyVault1, currPrice))}<br/>
+                {ctx.render18Scale(scaleDecimals(ctx, e.sParams.supplyVault1, e.sParams.supplyVault0, c1e18 * c1e18 / currPrice))}
             </div> : <span style={{ color: 'red', }}>?</span>,
         };
 
         {
-            let liq = ctx.amountToValue(e.params.vault0, e.outLimit10);
+            let liq = ctx.amountToValue(e.sParams.supplyVault0, e.outLimit10);
             if (isBig(liq)) row.liquidity += liq;
         }
         {
-            let liq = ctx.amountToValue(e.params.vault1, e.outLimit01);
+            let liq = ctx.amountToValue(e.sParams.supplyVault1, e.outLimit01);
             if (isBig(liq)) row.liquidity += liq;
         }
 
@@ -1005,7 +1033,7 @@ export function EulerSwapBrowse(props) {
             else quote = c1e18 * eulerSwapQuotes[i] / slip;
 
             let quoteAsset = (exactIn ? assetBInfo : assetAInfo).addr;
-            let quoteVault = e.asset0 === quoteAsset ? e.params.vault0 : e.params.vault1;
+            let quoteVault = e.asset0 === quoteAsset ? e.sParams.supplyVault0 : e.sParams.supplyVault1;
 
             row.q = quote;
             row.quote = <span className="font-bold">{ctx.renderUnderlying(quoteVault, quote)}</span>;
@@ -1146,7 +1174,7 @@ export function EulerSwapShowInstance(props) {
         {!existing && <div className="mt-4">No operator found.</div>}
 
         {existing && <div style={{ width: '100%', }}>
-            <EulerSwapViz viewMode ctx={ctx} account={myEulerSwap.params.eulerAccount} existingOperator={myEulerSwap.addr} vault0={myEulerSwap.params.vault0} vault1={myEulerSwap.params.vault1} initialParams={myEulerSwap.params} currReserves={{ reserve0: myEulerSwap.reserve0, reserve1: myEulerSwap.reserve1, }} />
+            <EulerSwapViz viewMode ctx={ctx} account={myEulerSwap.sParams.eulerAccount} existingOperator={myEulerSwap.addr} vault0={myEulerSwap.sParams.supplyVault0} vault1={myEulerSwap.sParams.supplyVault1} initialDParams={myEulerSwap.dParams} currReserves={{ reserve0: myEulerSwap.reserve0, reserve1: myEulerSwap.reserve1, }} />
         </div>}
     </div>
 }

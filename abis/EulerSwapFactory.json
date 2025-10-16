@@ -9,11 +9,6 @@
           "internalType": "address"
         },
         {
-          "name": "evkFactory_",
-          "type": "address",
-          "internalType": "address"
-        },
-        {
           "name": "eulerSwapImpl_",
           "type": "address",
           "internalType": "address"
@@ -75,17 +70,27 @@
       "name": "computePoolAddress",
       "inputs": [
         {
-          "name": "poolParams",
+          "name": "sParams",
           "type": "tuple",
-          "internalType": "struct IEulerSwap.Params",
+          "internalType": "struct IEulerSwap.StaticParams",
           "components": [
             {
-              "name": "vault0",
+              "name": "supplyVault0",
               "type": "address",
               "internalType": "address"
             },
             {
-              "name": "vault1",
+              "name": "supplyVault1",
+              "type": "address",
+              "internalType": "address"
+            },
+            {
+              "name": "borrowVault0",
+              "type": "address",
+              "internalType": "address"
+            },
+            {
+              "name": "borrowVault1",
               "type": "address",
               "internalType": "address"
             },
@@ -95,49 +100,19 @@
               "internalType": "address"
             },
             {
-              "name": "equilibriumReserve0",
-              "type": "uint112",
-              "internalType": "uint112"
-            },
-            {
-              "name": "equilibriumReserve1",
-              "type": "uint112",
-              "internalType": "uint112"
-            },
-            {
-              "name": "priceX",
-              "type": "uint256",
-              "internalType": "uint256"
-            },
-            {
-              "name": "priceY",
-              "type": "uint256",
-              "internalType": "uint256"
-            },
-            {
-              "name": "concentrationX",
-              "type": "uint256",
-              "internalType": "uint256"
-            },
-            {
-              "name": "concentrationY",
-              "type": "uint256",
-              "internalType": "uint256"
-            },
-            {
-              "name": "fee",
-              "type": "uint256",
-              "internalType": "uint256"
-            },
-            {
-              "name": "protocolFee",
-              "type": "uint256",
-              "internalType": "uint256"
+              "name": "feeRecipient",
+              "type": "address",
+              "internalType": "address"
             },
             {
               "name": "protocolFeeRecipient",
               "type": "address",
               "internalType": "address"
+            },
+            {
+              "name": "protocolFee",
+              "type": "uint64",
+              "internalType": "uint64"
             }
           ]
         },
@@ -158,20 +133,30 @@
     },
     {
       "type": "function",
-      "name": "deployPool",
+      "name": "creationCode",
       "inputs": [
         {
-          "name": "params",
+          "name": "sParams",
           "type": "tuple",
-          "internalType": "struct IEulerSwap.Params",
+          "internalType": "struct IEulerSwap.StaticParams",
           "components": [
             {
-              "name": "vault0",
+              "name": "supplyVault0",
               "type": "address",
               "internalType": "address"
             },
             {
-              "name": "vault1",
+              "name": "supplyVault1",
+              "type": "address",
+              "internalType": "address"
+            },
+            {
+              "name": "borrowVault0",
+              "type": "address",
+              "internalType": "address"
+            },
+            {
+              "name": "borrowVault1",
               "type": "address",
               "internalType": "address"
             },
@@ -180,6 +165,89 @@
               "type": "address",
               "internalType": "address"
             },
+            {
+              "name": "feeRecipient",
+              "type": "address",
+              "internalType": "address"
+            },
+            {
+              "name": "protocolFeeRecipient",
+              "type": "address",
+              "internalType": "address"
+            },
+            {
+              "name": "protocolFee",
+              "type": "uint64",
+              "internalType": "uint64"
+            }
+          ]
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bytes",
+          "internalType": "bytes"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "deployPool",
+      "inputs": [
+        {
+          "name": "sParams",
+          "type": "tuple",
+          "internalType": "struct IEulerSwap.StaticParams",
+          "components": [
+            {
+              "name": "supplyVault0",
+              "type": "address",
+              "internalType": "address"
+            },
+            {
+              "name": "supplyVault1",
+              "type": "address",
+              "internalType": "address"
+            },
+            {
+              "name": "borrowVault0",
+              "type": "address",
+              "internalType": "address"
+            },
+            {
+              "name": "borrowVault1",
+              "type": "address",
+              "internalType": "address"
+            },
+            {
+              "name": "eulerAccount",
+              "type": "address",
+              "internalType": "address"
+            },
+            {
+              "name": "feeRecipient",
+              "type": "address",
+              "internalType": "address"
+            },
+            {
+              "name": "protocolFeeRecipient",
+              "type": "address",
+              "internalType": "address"
+            },
+            {
+              "name": "protocolFee",
+              "type": "uint64",
+              "internalType": "uint64"
+            }
+          ]
+        },
+        {
+          "name": "dParams",
+          "type": "tuple",
+          "internalType": "struct IEulerSwap.DynamicParams",
+          "components": [
             {
               "name": "equilibriumReserve0",
               "type": "uint112",
@@ -191,37 +259,57 @@
               "internalType": "uint112"
             },
             {
+              "name": "minReserve0",
+              "type": "uint112",
+              "internalType": "uint112"
+            },
+            {
+              "name": "minReserve1",
+              "type": "uint112",
+              "internalType": "uint112"
+            },
+            {
               "name": "priceX",
-              "type": "uint256",
-              "internalType": "uint256"
+              "type": "uint80",
+              "internalType": "uint80"
             },
             {
               "name": "priceY",
-              "type": "uint256",
-              "internalType": "uint256"
+              "type": "uint80",
+              "internalType": "uint80"
             },
             {
               "name": "concentrationX",
-              "type": "uint256",
-              "internalType": "uint256"
+              "type": "uint64",
+              "internalType": "uint64"
             },
             {
               "name": "concentrationY",
-              "type": "uint256",
-              "internalType": "uint256"
+              "type": "uint64",
+              "internalType": "uint64"
             },
             {
-              "name": "fee",
-              "type": "uint256",
-              "internalType": "uint256"
+              "name": "fee0",
+              "type": "uint64",
+              "internalType": "uint64"
             },
             {
-              "name": "protocolFee",
-              "type": "uint256",
-              "internalType": "uint256"
+              "name": "fee1",
+              "type": "uint64",
+              "internalType": "uint64"
             },
             {
-              "name": "protocolFeeRecipient",
+              "name": "expiration",
+              "type": "uint40",
+              "internalType": "uint40"
+            },
+            {
+              "name": "swapHookedOperations",
+              "type": "uint8",
+              "internalType": "uint8"
+            },
+            {
+              "name": "swapHook",
               "type": "address",
               "internalType": "address"
             }
@@ -233,12 +321,12 @@
           "internalType": "struct IEulerSwap.InitialState",
           "components": [
             {
-              "name": "currReserve0",
+              "name": "reserve0",
               "type": "uint112",
               "internalType": "uint112"
             },
             {
-              "name": "currReserve1",
+              "name": "reserve1",
               "type": "uint112",
               "internalType": "uint112"
             }
@@ -258,6 +346,25 @@
         }
       ],
       "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "deployedPools",
+      "inputs": [
+        {
+          "name": "pool",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool",
+          "internalType": "bool"
+        }
+      ],
+      "stateMutability": "view"
     },
     {
       "type": "function",
@@ -294,19 +401,6 @@
     },
     {
       "type": "function",
-      "name": "evkFactory",
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "",
-          "type": "address",
-          "internalType": "address"
-        }
-      ],
-      "stateMutability": "view"
-    },
-    {
-      "type": "function",
       "name": "owner",
       "inputs": [],
       "outputs": [
@@ -314,157 +408,6 @@
           "name": "",
           "type": "address",
           "internalType": "address"
-        }
-      ],
-      "stateMutability": "view"
-    },
-    {
-      "type": "function",
-      "name": "poolByEulerAccount",
-      "inputs": [
-        {
-          "name": "eulerAccount",
-          "type": "address",
-          "internalType": "address"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "",
-          "type": "address",
-          "internalType": "address"
-        }
-      ],
-      "stateMutability": "view"
-    },
-    {
-      "type": "function",
-      "name": "pools",
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "",
-          "type": "address[]",
-          "internalType": "address[]"
-        }
-      ],
-      "stateMutability": "view"
-    },
-    {
-      "type": "function",
-      "name": "poolsByPair",
-      "inputs": [
-        {
-          "name": "asset0",
-          "type": "address",
-          "internalType": "address"
-        },
-        {
-          "name": "asset1",
-          "type": "address",
-          "internalType": "address"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "",
-          "type": "address[]",
-          "internalType": "address[]"
-        }
-      ],
-      "stateMutability": "view"
-    },
-    {
-      "type": "function",
-      "name": "poolsByPairLength",
-      "inputs": [
-        {
-          "name": "asset0",
-          "type": "address",
-          "internalType": "address"
-        },
-        {
-          "name": "asset1",
-          "type": "address",
-          "internalType": "address"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "",
-          "type": "uint256",
-          "internalType": "uint256"
-        }
-      ],
-      "stateMutability": "view"
-    },
-    {
-      "type": "function",
-      "name": "poolsByPairSlice",
-      "inputs": [
-        {
-          "name": "asset0",
-          "type": "address",
-          "internalType": "address"
-        },
-        {
-          "name": "asset1",
-          "type": "address",
-          "internalType": "address"
-        },
-        {
-          "name": "start",
-          "type": "uint256",
-          "internalType": "uint256"
-        },
-        {
-          "name": "end",
-          "type": "uint256",
-          "internalType": "uint256"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "",
-          "type": "address[]",
-          "internalType": "address[]"
-        }
-      ],
-      "stateMutability": "view"
-    },
-    {
-      "type": "function",
-      "name": "poolsLength",
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "",
-          "type": "uint256",
-          "internalType": "uint256"
-        }
-      ],
-      "stateMutability": "view"
-    },
-    {
-      "type": "function",
-      "name": "poolsSlice",
-      "inputs": [
-        {
-          "name": "start",
-          "type": "uint256",
-          "internalType": "uint256"
-        },
-        {
-          "name": "end",
-          "type": "uint256",
-          "internalType": "uint256"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "",
-          "type": "address[]",
-          "internalType": "address[]"
         }
       ],
       "stateMutability": "view"
@@ -548,13 +491,6 @@
       "stateMutability": "nonpayable"
     },
     {
-      "type": "function",
-      "name": "uninstallPool",
-      "inputs": [],
-      "outputs": [],
-      "stateMutability": "nonpayable"
-    },
-    {
       "type": "event",
       "name": "OwnershipTransferred",
       "inputs": [
@@ -568,167 +504,6 @@
           "name": "newOwner",
           "type": "address",
           "indexed": true,
-          "internalType": "address"
-        }
-      ],
-      "anonymous": false
-    },
-    {
-      "type": "event",
-      "name": "PoolConfig",
-      "inputs": [
-        {
-          "name": "pool",
-          "type": "address",
-          "indexed": true,
-          "internalType": "address"
-        },
-        {
-          "name": "params",
-          "type": "tuple",
-          "indexed": false,
-          "internalType": "struct IEulerSwap.Params",
-          "components": [
-            {
-              "name": "vault0",
-              "type": "address",
-              "internalType": "address"
-            },
-            {
-              "name": "vault1",
-              "type": "address",
-              "internalType": "address"
-            },
-            {
-              "name": "eulerAccount",
-              "type": "address",
-              "internalType": "address"
-            },
-            {
-              "name": "equilibriumReserve0",
-              "type": "uint112",
-              "internalType": "uint112"
-            },
-            {
-              "name": "equilibriumReserve1",
-              "type": "uint112",
-              "internalType": "uint112"
-            },
-            {
-              "name": "priceX",
-              "type": "uint256",
-              "internalType": "uint256"
-            },
-            {
-              "name": "priceY",
-              "type": "uint256",
-              "internalType": "uint256"
-            },
-            {
-              "name": "concentrationX",
-              "type": "uint256",
-              "internalType": "uint256"
-            },
-            {
-              "name": "concentrationY",
-              "type": "uint256",
-              "internalType": "uint256"
-            },
-            {
-              "name": "fee",
-              "type": "uint256",
-              "internalType": "uint256"
-            },
-            {
-              "name": "protocolFee",
-              "type": "uint256",
-              "internalType": "uint256"
-            },
-            {
-              "name": "protocolFeeRecipient",
-              "type": "address",
-              "internalType": "address"
-            }
-          ]
-        },
-        {
-          "name": "initialState",
-          "type": "tuple",
-          "indexed": false,
-          "internalType": "struct IEulerSwap.InitialState",
-          "components": [
-            {
-              "name": "currReserve0",
-              "type": "uint112",
-              "internalType": "uint112"
-            },
-            {
-              "name": "currReserve1",
-              "type": "uint112",
-              "internalType": "uint112"
-            }
-          ]
-        }
-      ],
-      "anonymous": false
-    },
-    {
-      "type": "event",
-      "name": "PoolDeployed",
-      "inputs": [
-        {
-          "name": "asset0",
-          "type": "address",
-          "indexed": true,
-          "internalType": "address"
-        },
-        {
-          "name": "asset1",
-          "type": "address",
-          "indexed": true,
-          "internalType": "address"
-        },
-        {
-          "name": "eulerAccount",
-          "type": "address",
-          "indexed": true,
-          "internalType": "address"
-        },
-        {
-          "name": "pool",
-          "type": "address",
-          "indexed": false,
-          "internalType": "address"
-        }
-      ],
-      "anonymous": false
-    },
-    {
-      "type": "event",
-      "name": "PoolUninstalled",
-      "inputs": [
-        {
-          "name": "asset0",
-          "type": "address",
-          "indexed": true,
-          "internalType": "address"
-        },
-        {
-          "name": "asset1",
-          "type": "address",
-          "indexed": true,
-          "internalType": "address"
-        },
-        {
-          "name": "eulerAccount",
-          "type": "address",
-          "indexed": true,
-          "internalType": "address"
-        },
-        {
-          "name": "pool",
-          "type": "address",
-          "indexed": false,
           "internalType": "address"
         }
       ],
@@ -787,22 +562,7 @@
     },
     {
       "type": "error",
-      "name": "InvalidQuery",
-      "inputs": []
-    },
-    {
-      "type": "error",
-      "name": "InvalidVaultImplementation",
-      "inputs": []
-    },
-    {
-      "type": "error",
       "name": "NotAuthorized",
-      "inputs": []
-    },
-    {
-      "type": "error",
-      "name": "OldOperatorStillInstalled",
       "inputs": []
     },
     {
@@ -813,11 +573,6 @@
     {
       "type": "error",
       "name": "RecipientSetAlready",
-      "inputs": []
-    },
-    {
-      "type": "error",
-      "name": "SliceOutOfBounds",
       "inputs": []
     },
     {

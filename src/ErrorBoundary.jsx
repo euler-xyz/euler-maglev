@@ -26,6 +26,8 @@ export function ContractErrorMessage({ error, onRetry, componentName }) {
         }
     };
 
+    console.error(error);
+
     return (
         <Card className="mt-4">
             <div className="text-center p-4">

@@ -7,17 +7,18 @@ import evcAbi from '../abis/EthereumVaultConnector.json';
 import iEulerSwapAbi from '../abis/IEulerSwap.json';
 import iEulerSwapPeripheryAbi from '../abis/IEulerSwapPeriphery.json';
 import eulerSwapFactoryAbi from '../abis/EulerSwapFactory.json';
+import eulerSwapRegistryAbi from '../abis/EulerSwapRegistry.json';
 import maglevLensAbi from '../abis/MaglevLens.json';
 
 
 
-export async function deployEulerSwap(ctx, params, initialState, oldReserves) {
-    console.log('DEPLOYING EULERSWAP', params, initialState);
-    let [predictedAddress, salt] = await LibEulerSwap.genAddress(ctx.client, ctx.currChain.addresses.eulerSwapAddrs.eulerSwapFactory, params);
+export async function deployEulerSwap(ctx, sParams, dParams, initialState, oldReserves) {
+    console.log('DEPLOYING EULERSWAP', sParams, dParams, initialState);
+    let [predictedAddress, salt] = await LibEulerSwap.genAddress(ctx.client, ctx.currChain.addresses.eulerSwapAddrs.eulerSwapFactory, sParams);
 
     let previousOperator = await ctx.client.readContract({
-        address: ctx.currChain.addresses.eulerSwapAddrs.eulerSwapFactory,
-        abi: eulerSwapFactoryAbi.abi,
+        address: ctx.currChain.addresses.eulerSwapAddrs.eulerSwapRegistry,
+        abi: eulerSwapRegistryAbi.abi,
         functionName: 'poolByEulerAccount',
         args: [ctx.myAddr],
     });
@@ -68,7 +69,18 @@ export async function deployEulerSwap(ctx, params, initialState, oldReserves) {
         data: encodeFunctionData({
             abi: eulerSwapFactoryAbi.abi,
             functionName: 'deployPool',
-            args: [params, initialState, salt],
+            args: [sParams, dParams, initialState, salt],
+        }),
+    });
+
+    batch.push({
+        targetContract: ctx.currChain.addresses.eulerSwapAddrs.eulerSwapRegistry,
+        onBehalfOfAccount: ctx.myAddr,
+        value: 0n, // FIXME: set non-zero if validity bond required
+        data: encodeFunctionData({
+            abi: eulerSwapRegistryAbi.abi,
+            functionName: 'registerPool',
+            args: [predictedAddress],
         }),
     });
 
@@ -85,8 +97,8 @@ export async function deployEulerSwap(ctx, params, initialState, oldReserves) {
 
 export async function uninstallEulerSwap(ctx) {
     let previousOperator = await ctx.client.readContract({
-        address: ctx.currChain.addresses.eulerSwapAddrs.eulerSwapFactory,
-        abi: eulerSwapFactoryAbi.abi,
+        address: ctx.currChain.addresses.eulerSwapAddrs.eulerSwapRegistry,
+        abi: eulerSwapRegistryAbi.abi,
         functionName: 'poolByEulerAccount',
         args: [ctx.myAddr],
     });
@@ -113,7 +125,7 @@ export async function uninstallEulerSwap(ctx) {
         value: 0n,
         data: encodeFunctionData({
             abi: eulerSwapFactoryAbi.abi,
-            functionName: 'uninstallPool',
+            functionName: 'unregisterPool',
             args: [],
         }),
     });

@@ -22,12 +22,12 @@
       ],
       "outputs": [
         {
-          "name": "",
+          "name": "limitIn",
           "type": "uint256",
           "internalType": "uint256"
         },
         {
-          "name": "",
+          "name": "limitOut",
           "type": "uint256",
           "internalType": "uint256"
         }
