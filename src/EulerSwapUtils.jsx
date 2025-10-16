@@ -120,11 +120,11 @@ export async function uninstallEulerSwap(ctx) {
     }
 
     batch.push({
-        targetContract: ctx.currChain.addresses.eulerSwapAddrs.eulerSwapFactory,
+        targetContract: ctx.currChain.addresses.eulerSwapAddrs.eulerSwapRegistry,
         onBehalfOfAccount: ctx.myAddr,
         value: 0n,
         data: encodeFunctionData({
-            abi: eulerSwapFactoryAbi.abi,
+            abi: eulerSwapRegistryAbi.abi,
             functionName: 'unregisterPool',
             args: [],
         }),

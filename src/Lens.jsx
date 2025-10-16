@@ -263,8 +263,6 @@ function decodeVaultsPersonalInfo(me, subAccountBitmask, vaultAddrs, raw) {
 }
 
 export function useVaultsPersonalInfo(me, vaultAddrs) {
-console.log("ME",me);
-console.log("VA",vaultAddrs);
     let { data: currChain, isPending: pending1 } = useEulerChain();
     let client = usePublicClient();
 
@@ -377,7 +375,6 @@ export function useEulerSwapData() {
                 args: [currChain.addresses.eulerSwapAddrs.eulerSwapRegistry],
             });
 
-            console.log("DING",raw);
             return raw;
         },
     });

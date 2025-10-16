@@ -203,8 +203,14 @@ export function EulerSwapParamsTable(props) {
         priceNum = parseFloat(formatUnits(scaleDecimals(ctx, sParams.supplyVault0, sParams.supplyVault1, 10n**18n * dParams.priceX) / dParams.priceY, 18));
     }
 
-    let fee0Rendered = dParams.fee0 == undefined ? '-' : ctx.render18ScalePercent(dParams.fee0);
-    let fee1Rendered = dParams.fee1 == undefined ? '-' : ctx.render18ScalePercent(dParams.fee1);
+    let renderFee = (fee) => {
+        if (fee === undefined) return '-';
+        if (fee >= c1e18) return <span style={{ color: 'red', }}>DISABLED</span>;
+        return ctx.render18ScalePercent(fee);
+    };
+
+    let fee0Rendered = renderFee(dParams.fee0);
+    let fee1Rendered = renderFee(dParams.fee1);
 
     let summaryRows = [
         {
@@ -264,7 +270,6 @@ export function EulerSwapViz(props) {
 
     let { data: enteredMarkets, error: enteredMarketsError, isError: enteredMarketsIsError } = Lens.useMyEnteredMarkets(props.account);
 
-    console.log(props);
     let seenVaults = {};
     if (enteredMarkets) {
         for (let v of enteredMarkets.collaterals) seenVaults[v] = true;
@@ -507,7 +512,7 @@ export function EulerSwapViz(props) {
             console.warn('Cannot install EulerSwap: Required parameters are undefined or invalid');
             return;
         }
-        
+
         await EulerSwapUtils.deployEulerSwap(ctx, sParamsRaw, dParamsRaw, initialStateRaw, props.currReserves);
         if (props.onInstall) props.onInstall();
     };
@@ -537,8 +542,6 @@ export function EulerSwapViz(props) {
             };
         }
 
-        console.log("SPRAW",sParamsRaw);
-        console.log("DPRAW",dParamsRaw);
         o.eqPrice = ctx.render18Scale(scaleDecimals(ctx, sParamsRaw.supplyVault0, sParamsRaw.supplyVault1, 10n**18n * dParamsRaw.priceX) / dParamsRaw.priceY);
 
         if (fundSpacePoint >= 0) {
@@ -671,6 +674,9 @@ export function EulerSwapViz(props) {
         </div>
     }
 
+    let asset0 = ctx.renderVaultAsset(props.vault0);
+    let asset1 = ctx.renderVaultAsset(props.vault1);
+
     return <div>
         <Tooltip target=".eulerswap-tooltip" />
 
@@ -681,15 +687,15 @@ export function EulerSwapViz(props) {
 
         {!props.viewMode && <div>
             <div className="flex align-items-center justify-content-around">
-                <PercentInput label={`Concentration X (${ctx.renderVaultAsset(props.vault1)})`} id="concentration-x-input-field" default={params.concentrationX} onChange={e => setConcentrationX(e)} />
+                <PercentInput label={`Concentration0 (${asset0} output)`} id="concentration-x-input-field" default={params.concentrationX} onChange={e => setConcentrationX(e)} />
 
-                <PercentInput label={`Concentration Y (${ctx.renderVaultAsset(props.vault0)})`} id="concentration-y-input-field" default={params.concentrationY} onChange={e => setConcentrationY(e)} />
+                <PercentInput label={`Concentration1 (${asset1} output)`} id="concentration-y-input-field" default={params.concentrationY} onChange={e => setConcentrationY(e)} />
             </div>
 
             <div className="flex align-items-center justify-content-around">
-                <PercentInput label="Fee0" id="fee-input-field" default={params.fee0} onChange={e => setFee0(e)} />
+                <PercentInput label={`Fee0 (${asset0} input)`} id="fee-input-field" default={params.fee0} onChange={e => setFee0(e)} />
 
-                <PercentInput label="Fee1" id="fee-input-field" default={params.fee1} onChange={e => setFee1(e)} />
+                <PercentInput label={`Fee1 (${asset1} input)`} id="fee-input-field" default={params.fee1} onChange={e => setFee1(e)} />
             </div>
 
             <div className="flex align-items-center justify-content-around">
@@ -771,7 +777,7 @@ export function EulerSwapViz(props) {
             </div>}
 
             <div className="mt-4 flex align-items-center justify-content-center">
-                <Button className="mr-6" label="Install" disabled={params.concentrationX === undefined || params.concentrationY === undefined || params.fee0 === undefined || params.fee1 === undefined || !parsedPrice[0] || !parsedPrice[1]} onClick={installEulerSwap} />
+                <Button className="mr-6" label={props.existingOperator ? "Reconfigure" : "Install"} disabled={params.concentrationX === undefined || params.concentrationY === undefined || params.fee0 === undefined || params.fee1 === undefined || !parsedPrice[0] || !parsedPrice[1]} onClick={installEulerSwap} />
                 <Button className="mr-6" label="Show Raw" onClick={() => setShowRawDialog(true)} />
             </div>
         </div>}
@@ -867,7 +873,6 @@ export function EulerSwapPanel(props) {
     return <Panel header={<span>EulerSwap <span style={{ color: 'black', backgroundColor: 'green', borderRadius: 6, padding: 6, }}>2</span></span>} className="mt-6">
         <div className="flex justify-content-evenly mt-4">
             {uiState === 'default' && <>
-                <Button label="New" onClick={() => setUiState('new-choose-vaults')} />
                 {existing && <Button label="Edit" onClick={doEdit} />}
                 {existing && <Button label="Uninstall" onClick={doUninstall} />}
             </>}
@@ -888,7 +893,7 @@ export function EulerSwapPanel(props) {
         </div>}
 
         {uiState === 'edit-existing' && <div style={{ width: '100%', }}>
-            <EulerSwapViz ctx={ctx} account={ctx.myAddr} vault0={vaults[0]} vault1={vaults[1]} initialDParams={existing && myEulerSwap.dParams} currReserves={existing && currReserves} onInstall={onInstall} />
+            <EulerSwapViz ctx={ctx} account={ctx.myAddr} existingOperator={existing} vault0={vaults[0]} vault1={vaults[1]} initialDParams={existing && myEulerSwap.dParams} currReserves={existing && currReserves} onInstall={onInstall} />
         </div>}
     </Panel>
 }
