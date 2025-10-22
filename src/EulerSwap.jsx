@@ -829,9 +829,6 @@ export function EulerSwapPanel(props) {
                 <h3 style={{ color: 'orange' }}>
                     EulerSwap is not currently supported on this chain.
                 </h3>
-                <p style={{ marginTop: '1rem' }}>
-                    Maglev is currently available on Ethereum, BSC, Avalanche, and Unichain.
-                </p>
             </div>
         </Panel>;
     }
@@ -873,6 +870,7 @@ export function EulerSwapPanel(props) {
     return <Panel header={<span>EulerSwap <span style={{ color: 'black', backgroundColor: 'green', borderRadius: 6, padding: 6, }}>2</span></span>} className="mt-6">
         <div className="flex justify-content-evenly mt-4">
             {uiState === 'default' && <>
+                {!existing && <Button label="New" onClick={() => setUiState('new-choose-vaults')} />}
                 {existing && <Button label="Edit" onClick={doEdit} />}
                 {existing && <Button label="Uninstall" onClick={doUninstall} />}
             </>}
@@ -916,9 +914,6 @@ export function EulerSwapBrowse(props) {
             <h2 style={{ color: 'orange', textAlign: 'center' }}>
                 EulerSwap is not currently supported on this chain.
             </h2>
-            <p style={{ textAlign: 'center', marginTop: '1rem' }}>
-                Maglev is currently available on Ethereum, BSC, Avalanche, and Unichain.
-            </p>
         </div>;
     }
 
@@ -1158,9 +1153,6 @@ export function EulerSwapShowInstance(props) {
             <h2 style={{ color: 'orange', textAlign: 'center' }}>
                 EulerSwap is not currently supported on this chain.
             </h2>
-            <p style={{ textAlign: 'center', marginTop: '1rem' }}>
-                Maglev is currently available on Ethereum, BSC, Avalanche, and Unichain.
-            </p>
         </div>;
     }
 
