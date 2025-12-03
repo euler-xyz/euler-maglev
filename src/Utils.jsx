@@ -1,4 +1,4 @@
-import { getAddress, parseUnits, formatUnits, parseAbi } from "viem";
+import { getAddress, parseUnits, formatUnits, parseAbi, encodeFunctionData } from "viem";
 
 
 export function getSubAccountAddress(addr, id) {
@@ -22,7 +22,9 @@ export function utf8Decode(inp) {
 
 export async function executeTxn(ctx, args) {
     //let gas = await ctx.client.estimateGas(args);
-    let gas = 1000000n; // FIXME: estimateGas is very wrong, at least in dev?
+    let gas = 10000000n; // FIXME: estimateGas is very wrong, at least in dev?
+    console.log("ARGS",args);
+    console.log("GAS = ",gas);
 
     args = { gas, ...args };
 

@@ -6,7 +6,7 @@ import eulerChainsInterfaces from '../abis/chains/EulerChains.json';
 let eulerChainsDevLand;
 
 if (import.meta.env.DEV) {
-    eulerChainsDevLand = (await import('../../euler-devland/dev-ctx/EulerChains.json')).default;
+    eulerChainsDevLand = []; // (await import('../../euler-devland/dev-ctx/EulerChains.json')).default;
 } else {
     eulerChainsDevLand = [];
 }

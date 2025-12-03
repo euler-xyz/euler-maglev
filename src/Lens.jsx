@@ -11,10 +11,12 @@ import maglevLensAbi from '../abis/MaglevLens.json';
 let products31337;
 let prices31337;
 
+/*
 if (import.meta.env.DEV) {
     products31337 = (await import('../../euler-devland/dev-ctx/labels/31337/products.json')).default;
     prices31337 = (await import('../../euler-devland/dev-ctx/priceapi/31337/prices.json')).default;
 }
+*/
 
 
 
