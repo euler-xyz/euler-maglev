@@ -127,16 +127,6 @@
                   "name": "feeRecipient",
                   "type": "address",
                   "internalType": "address"
-                },
-                {
-                  "name": "protocolFeeRecipient",
-                  "type": "address",
-                  "internalType": "address"
-                },
-                {
-                  "name": "protocolFee",
-                  "type": "uint64",
-                  "internalType": "uint64"
                 }
               ]
             },
@@ -341,16 +331,6 @@
                   "name": "feeRecipient",
                   "type": "address",
                   "internalType": "address"
-                },
-                {
-                  "name": "protocolFeeRecipient",
-                  "type": "address",
-                  "internalType": "address"
-                },
-                {
-                  "name": "protocolFee",
-                  "type": "uint64",
-                  "internalType": "uint64"
                 }
               ]
             },

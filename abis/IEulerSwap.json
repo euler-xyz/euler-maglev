@@ -320,16 +320,6 @@
               "name": "feeRecipient",
               "type": "address",
               "internalType": "address"
-            },
-            {
-              "name": "protocolFeeRecipient",
-              "type": "address",
-              "internalType": "address"
-            },
-            {
-              "name": "protocolFee",
-              "type": "uint64",
-              "internalType": "uint64"
             }
           ]
         }
@@ -340,6 +330,25 @@
       "type": "function",
       "name": "isInstalled",
       "inputs": [],
+      "outputs": [
+        {
+          "name": "installed",
+          "type": "bool",
+          "internalType": "bool"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "managers",
+      "inputs": [
+        {
+          "name": "manager",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
       "outputs": [
         {
           "name": "installed",

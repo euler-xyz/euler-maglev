@@ -18,15 +18,15 @@ export function getChainConfigs() {
     for (let chain of chains) {
         // FIXME: no need to override this when it's in addresses
 
-        if (chain.chainId === 8453) {
+        if (chain.chainId === 1) {
             chain.addresses.eulerSwapAddrs = {
-                eulerSwapFactory: '0xd7c9ec4925e5d95d341a169e8d7275e92b064b74',
-                eulerSwapRegistry: '0x93c4d4909fdc3b0651374f1160ec2aed4960d82c',
-                eulerSwapPeriphery: '0x18f0e5f802937447f49ea5e8faebb454c5c74c71',
-            };
+                eulerSwapFactory: '0xD05213331221fAB8a3C387F2affBb605Bb04DF5F',
+                eulerSwapRegistry: '0x5FcCB84363F020c0cADE052C9c654aABF932814A',
+                eulerSwapPeriphery: '0xD3a349EE0A21eA0A7E9513ac236ae614b5FD513E',
+            }
 
             chain.addresses.maglevAddrs = {
-                maglevLens: '0x9deEF5F10a34963d63bDaF47Ec1e59Fd19A594Dd',
+                maglevLens: '0x00cEcca22cA68480d4Ad22bb9C5Fb7F468179b8c',
             };
         }
     }
