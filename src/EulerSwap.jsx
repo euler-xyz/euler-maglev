@@ -219,6 +219,11 @@ export function EulerSwapParamsTable(props) {
             v1: ctx.renderUnderlying(sParams.supplyVault1, dParams.equilibriumReserve1),
         },
         {
+            desc: <b>Minimum Reserves</b>,
+            v0: ctx.renderUnderlying(sParams.supplyVault0, dParams.minReserve0),
+            v1: ctx.renderUnderlying(sParams.supplyVault1, dParams.minReserve1),
+        },
+        {
             desc: <b>Price at Equilibrium</b>,
             v0: priceNum === undefined ? '-' : priceNum,
             v1: priceNum === undefined ? '-' : 1/priceNum,
@@ -238,8 +243,8 @@ export function EulerSwapParamsTable(props) {
     if (state) {
         summaryRows.unshift({
             desc: <b>Current Reserves</b>,
-            v0: state.currReserve0 === undefined ? '-' : ctx.renderUnderlying(sParams.supplyVault0, state.currReserve0),
-            v1: state.currReserve1 === undefined ? '-' : ctx.renderUnderlying(sParams.supplyVault1, state.currReserve1),
+            v0: state.reserve0 === undefined ? '-' : ctx.renderUnderlying(sParams.supplyVault0, state.reserve0),
+            v1: state.reserve1 === undefined ? '-' : ctx.renderUnderlying(sParams.supplyVault1, state.reserve1),
         });
     }
 
