@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 import { getDefaultConfig, RainbowKitProvider, darkTheme } from '@rainbow-me/rainbowkit';
 import { WagmiProvider, useChainId, useSwitchChain } from 'wagmi';
@@ -10,6 +10,7 @@ import { Tooltip as ReactTooltip } from 'react-tooltip';
 
 import { Dropdown } from 'primereact/dropdown';
 
+import { useAddressChecker } from "./AddressScreener";
 import { useGlobalContext } from "./Ctx";
 import { getWagmiChainConfigs } from './ChainConfig';
 import { VaultList, VaultInfo } from './Vaults';
@@ -27,39 +28,6 @@ const wagmiConfig = getDefaultConfig({
 
 const queryClient = new QueryClient();
 
-
-
-function useAddressChecker(address, setSuspicious) {
-    useEffect(() => {
-        if (!address) return;
-
-        let fetchAddressInfo = async () => {
-            try {
-                let response = await fetch('https://data.euler.finance/trm-address-checker', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        address,
-                        chain: 'all',
-                    }),
-                });
-
-                let data = await response.json();
-
-                if (data.addressIsSuspicious) {
-                    console.error('TRM claims address is suspicious: ', data);
-                    setSuspicious(true);
-                }
-            } catch (error) {
-                console.error("Failed to check address", error);
-            }
-        };
-
-        fetchAddressInfo();
-    }, [address]);
-}
 
 
 function Header(props) {
