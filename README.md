@@ -4,17 +4,43 @@ Maglev is a minimal and experimental interface for managing EulerSwap instances,
 
 ## Setup
 
-In this project's dir, run:
+Install dependencies:
 
-    npm install
+    pnpm install
+
+Initialize the git submodule:
+
+    git submodule update --init
 
 Start the dev server:
 
-    npm run dev
+    pnpm run dev
 
 ## Dev mode
 
-If you want to run against a [devland](https://github.com/euler-xyz/euler-devland) instance, checkout out the `euler-devland` repo side-by-side this repo. Setup devland by running its `install.sh` script, then set the `DEV` environment variable when starting maglev with `npm run dev`.
+By default, `pnpm run dev` attempts to load local chain configs and mock data from the [euler-devland](https://github.com/euler-xyz/euler-devland) repo. It expects it as a sibling directory:
+
+    ../euler-devland/dev-ctx/
+
+If `euler-devland` is not present, the app will fall back gracefully with a console warning.
+
+To explicitly skip devland imports (even if the directory exists):
+
+    pnpm run dev:no-devland
+
+### Devland setup
+
+Checkout the `euler-devland` repo side-by-side with this repo and run its `install.sh` script.
+
+## Scripts
+
+| Command | Description |
+|---|---|
+| `pnpm run dev` | Start dev server (loads devland if available) |
+| `pnpm run dev:no-devland` | Start dev server skipping devland imports |
+| `pnpm run build` | Production build |
+| `pnpm run preview` | Preview production build locally |
+| `pnpm run lint` | Run ESLint |
 
 ## License
 
