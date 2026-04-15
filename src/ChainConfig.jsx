@@ -3,12 +3,15 @@ import * as viemChains from "viem/chains";
 
 import eulerChainsInterfaces from '../abis/chains/EulerChains.json';
 
-let eulerChainsDevLand;
+let eulerChainsDevLand = [];
 
-if (import.meta.env.DEV) {
-    eulerChainsDevLand = (await import('../../euler-devland/dev-ctx/EulerChains.json')).default;
-} else {
-    eulerChainsDevLand = [];
+if (import.meta.env.DEV && import.meta.env.VITE_SKIP_DEVLAND !== 'true') {
+    try {
+        const path = '../../euler-devland/dev-ctx/EulerChains.json';
+        eulerChainsDevLand = (await import(/* @vite-ignore */ path)).default;
+    } catch (e) {
+        console.warn('euler-devland not found, skipping devland chains');
+    }
 }
 
 

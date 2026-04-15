@@ -11,18 +11,24 @@ import maglevLensAbi from '../abis/MaglevLens.json';
 let products31337;
 let prices31337;
 
-if (import.meta.env.DEV) {
-    products31337 = (await import('../../euler-devland/dev-ctx/labels/31337/products.json')).default;
-    prices31337 = (await import('../../euler-devland/dev-ctx/priceapi/31337/prices.json')).default;
+if (import.meta.env.DEV && import.meta.env.VITE_SKIP_DEVLAND !== 'true') {
+    try {
+        const productsPath = '../../euler-devland/dev-ctx/labels/31337/products.json';
+        const pricesPath = '../../euler-devland/dev-ctx/priceapi/31337/prices.json';
+        products31337 = (await import(/* @vite-ignore */ productsPath)).default;
+        prices31337 = (await import(/* @vite-ignore */ pricesPath)).default;
+    } catch (e) {
+        console.warn('euler-devland not found, skipping devland data');
+    }
 }
 
 
 
 
 
-const mask16 = 2n**16n - 1n;
-const mask48 = 2n**48n - 1n;
-const mask112 = 2n**112n - 1n;
+const mask16 = 2n ** 16n - 1n;
+const mask48 = 2n ** 48n - 1n;
+const mask112 = 2n ** 112n - 1n;
 
 
 
@@ -89,7 +95,7 @@ export function usePrices() {
         queryFn: async () => {
             if (myChainId === 31337) return { 31337: prices31337, };
 
-            let response = await fetch(`https://app.euler.finance/api/v1/price?chainId=${myChainId}`);
+            let response = await fetch(`https://indexer.euler.finance/v1/prices?chainId=${myChainId}`);
             let json = await response.json();
             return { [myChainId]: json, };
         },
