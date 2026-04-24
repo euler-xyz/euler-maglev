@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { useQueryClient } from '@tanstack/react-query';
 import { useConfig, useWalletClient, usePublicClient, useAccount } from 'wagmi';
-import { parseUnits, formatUnits } from "viem";
+import { getAddress, parseUnits, formatUnits } from "viem";
 import fromExponential from 'from-exponential';
 
 import * as Lens from "./Lens";
@@ -14,12 +14,16 @@ export class GlobalContext {
         this.args = args;
 
         this.subAccount = this.args.currSubAccount;
-        this.numSubAccounts = this.args.numSubAccounts;
+        this.subAccountIds = this.args.subAccountIds;
         let wagmiAccount = useAccount();
-        this.myPrimaryAddr = args.addr || wagmiAccount?.address;
+        this.walletAddr = wagmiAccount?.address;
+        this.myPrimaryAddr = args.addr || this.walletAddr;
 
         this.myAddr = this.myPrimaryAddr && Utils.getSubAccountAddress(this.myPrimaryAddr, this.subAccount);
         this.connected = !!this.myPrimaryAddr;
+        this.walletConnected = !!this.walletAddr;
+        this.spyMode = !!args.addr && (!this.walletAddr || getAddress(args.addr) !== getAddress(this.walletAddr));
+        this.canWrite = !!this.walletAddr && !this.spyMode;
 
         this.wagmiConfig = useConfig();
         this.client = usePublicClient();
@@ -33,7 +37,7 @@ export class GlobalContext {
 
         let vaultAddrsLabels = labels ? Object.keys(labels.vaults) : undefined;
         let vaultAddrsExtra = Object.keys(this.args.extraVaultAddrs[currChain?.chainId] || {});
-        let mySubaccountMask = (1n << BigInt(this.args.numSubAccounts)) - 1n;
+        let mySubaccountMask = this.args.subAccountIds.reduce((mask, id) => mask | (1n << BigInt(id)), 0n);
 
         let { data: vaultsStaticLabels, error: vaultsStaticLabelsError, isError: vaultsStaticLabelsIsError } = Lens.useVaultsStaticInfo(vaultAddrsLabels);
         let { data: vaultsStaticExtra, error: vaultsStaticExtraError, isError: vaultsStaticExtraIsError } = Lens.useVaultsStaticInfo(vaultAddrsExtra);
@@ -351,9 +355,9 @@ export class GlobalContext {
     }
 
     _aggregateSubAccounts() {
-        let o = [];
+        let o = {};
 
-        for (let i = 0; i < this.args.numSubAccounts; i++) {
+        for (let i of this.args.subAccountIds) {
             let vaults = this.vaultsPersonal[i];
             let agg = {
                 subAccount: i,
@@ -372,7 +376,7 @@ export class GlobalContext {
                 agg.nav -= this.amountToValue(vaultAddr, v.debt);
             }
 
-            o.push(agg);
+            o[i] = agg;
         }
 
         this.subAccounts = o;

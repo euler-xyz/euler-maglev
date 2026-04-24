@@ -486,6 +486,8 @@ export function EulerSwapViz(props) {
 
 
     let installEulerSwap = async () => {
+        if (!ctx.canWrite) return;
+
         // Validate that all required parameters are defined before installing
         if (params.concentrationX === undefined || params.concentrationY === undefined || params.fee === undefined || !parsedPrice[0] || !parsedPrice[1]) {
             console.warn('Cannot install EulerSwap: Required parameters are undefined or invalid');
@@ -743,7 +745,7 @@ export function EulerSwapViz(props) {
             </div>}
 
             <div className="mt-4 flex align-items-center justify-content-center">
-                <Button className="mr-6" label="Install" disabled={params.concentrationX === undefined || params.concentrationY === undefined || params.fee === undefined || !parsedPrice[0] || !parsedPrice[1]} onClick={installEulerSwap} />
+                <Button className="mr-6" label="Install" disabled={!ctx.canWrite || params.concentrationX === undefined || params.concentrationY === undefined || params.fee === undefined || !parsedPrice[0] || !parsedPrice[1]} onClick={installEulerSwap} />
                 <Button className="mr-6" label="Show Raw" onClick={() => setShowRawDialog(true)} />
             </div>
         </div>}
@@ -828,6 +830,7 @@ export function EulerSwapPanel(props) {
     };
 
     let doUninstall = async () => {
+        if (!ctx.canWrite) return;
         await EulerSwapUtils.uninstallEulerSwap(ctx);
     };
 
@@ -839,9 +842,9 @@ export function EulerSwapPanel(props) {
     return <Panel header="EulerSwap" className="mt-6">
         <div className="flex justify-content-evenly mt-4">
             {uiState === 'default' && <>
-                <Button label="New" onClick={() => setUiState('new-choose-vaults')} />
-                {existing && <Button label="Edit" onClick={doEdit} />}
-                {existing && <Button label="Uninstall" onClick={doUninstall} />}
+                <Button label="New" disabled={!ctx.canWrite} onClick={() => setUiState('new-choose-vaults')} />
+                {existing && <Button label="Edit" disabled={!ctx.canWrite} onClick={doEdit} />}
+                {existing && <Button label="Uninstall" disabled={!ctx.canWrite} onClick={doUninstall} />}
             </>}
 
             {uiState !== 'default' && <>
@@ -944,11 +947,13 @@ export function EulerSwapBrowse(props) {
 
     if (!ctx.addExtraVaults(seenVaults)) return 'Loading...';
 
-    let swapReady = slip !== undefined && (!ctx.connected || allowance !== undefined);
+    let swapReady = slip !== undefined && (!ctx.canWrite || allowance !== undefined);
 
     let rows = [];
 
     let doSwap = async (eulerSwap, quote) => {
+        if (!ctx.canWrite) return;
+
         let tokenIn = ctx.knownAssets[assetA].addr;
         let tokenOut = ctx.knownAssets[assetB].addr;
 
@@ -960,6 +965,7 @@ export function EulerSwapBrowse(props) {
     };
 
     let doApprove = async (approveAmount) => {
+        if (!ctx.canWrite) return;
         await EulerSwapUtils.doApprove(ctx, assetAInfo?.addr, ctx.currChain?.addresses.eulerSwapAddrs.eulerSwapPeriphery, approveAmount);
     };
 
@@ -1010,7 +1016,7 @@ export function EulerSwapBrowse(props) {
             row.q = quote;
             row.quote = <span className="font-bold">{ctx.renderUnderlying(quoteVault, quote)}</span>;
 
-            if (!ctx.connected) {
+            if (!ctx.canWrite) {
                 row.swap = <Button disabled>Swap</Button>;
             } else if (swapAmountParsed > allowance) {
                 row.swap = <Button onClick={() => doApprove(exactIn ? swapAmountParsed : quote)}>Approve</Button>;
