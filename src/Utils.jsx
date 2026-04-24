@@ -1,8 +1,14 @@
-import { getAddress, parseUnits, formatUnits, parseAbi } from "viem";
+import { getAddress } from "viem";
 
 
 export function getSubAccountAddress(addr, id) {
     return getAddress('0x' + (BigInt(addr) ^ BigInt(id)).toString(16).padStart(40, '0'));
+}
+
+export function getSubAccountId(primaryAddr, subAccountAddr) {
+    let id = BigInt(getAddress(primaryAddr)) ^ BigInt(getAddress(subAccountAddr));
+    if (id < 0n || id > 255n) throw new Error("Not a subaccount address for this wallet");
+    return Number(id);
 }
 
 export function hex2a(inp) {
