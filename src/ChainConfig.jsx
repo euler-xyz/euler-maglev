@@ -3,12 +3,15 @@ import * as viemChains from "viem/chains";
 
 import eulerChainsInterfaces from '../abis/chains/EulerChains.json';
 
-let eulerChainsDevLand;
+let eulerChainsDevLand = [];
 
-if (import.meta.env.DEV) {
-    eulerChainsDevLand = (await import('../../euler-devland/dev-ctx/EulerChains.json')).default;
-} else {
-    eulerChainsDevLand = [];
+if (import.meta.env.DEV && import.meta.env.VITE_SKIP_DEVLAND !== 'true') {
+    try {
+        const path = '../../euler-devland/dev-ctx/EulerChains.json';
+        eulerChainsDevLand = (await import(/* @vite-ignore */ path)).default;
+    } catch (e) {
+        console.warn('euler-devland not found, skipping devland chains');
+    }
 }
 
 
@@ -27,6 +30,15 @@ export function getChainConfigs() {
 
             chain.addresses.maglevAddrs = {
                 maglevLens: '0x00cEcca22cA68480d4Ad22bb9C5Fb7F468179b8c',
+            };
+        } else if (chain.chainId === 143) {
+            chain.addresses.eulerSwapAddrs = {
+                eulerSwapFactory: '0x34f8f028c6a446a464c10a135f44fc6fb2cee1a9',
+                eulerSwapPeriphery: '0xd1f69cf959c1a3aae7bee5ec677222d259585b27',
+            };
+
+            chain.addresses.maglevAddrs = {
+                maglevLens: '0x4D8e0379cD91d904864c631C979A8F68e212E904',
             };
         }
     }
