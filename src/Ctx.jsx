@@ -139,7 +139,12 @@ export class GlobalContext {
 
     vaultSymbolToAssetSymbol(symbol) {
         let m = symbol.match(/^e(.*)-(\d+)$/);
-        return m[1];
+        if (m) return m[1];
+        // Vaults without a version suffix (e.g. collateral vaults like "ecVBILL")
+        // don't match the standard "e<asset>-<n>" format; fall back to stripping
+        // the leading "e" rather than crashing.
+        let m2 = symbol.match(/^e(.+)$/);
+        return m2 ? m2[1] : symbol;
     }
 
     rawVaultName(addr, hideLabel) {
@@ -162,9 +167,14 @@ export class GlobalContext {
         }
 
         let m = vs.symbol.match(/^e(.*-\d+)$/);
-        let sym = m[1];
+        // Vaults without a version suffix (e.g. collateral vaults like "ecVBILL")
+        // don't match the standard format; show the raw symbol instead of crashing.
+        let sym = m ? m[1] : vs.symbol;
 
-        if (!noLinks) {
+        // Only link to the detail page for vaults the lens can fully read; the
+        // detail view needs global/detailed state that reverts for unsupported
+        // (e.g. collateral-only) vaults, so linking there would just error.
+        if (!noLinks && this.vaultsGlobal[addr]) {
             sym = <Link to={`/vault/${addr}`}>{sym}</Link>;
         }
 
@@ -303,10 +313,18 @@ export class GlobalContext {
     vaultStatus(vaultAddr, vaultsPersonal) {
         if (!vaultsPersonal) vaultsPersonal = this.vaultsPersonal[this.subAccount];
 
-        let shares = vaultsPersonal[vaultAddr].balance;
+        let personal = vaultsPersonal[vaultAddr];
+
+        // Unsupported vaults (the lens reverts on their global/personal state, e.g.
+        // collateral-only vaults) have no readable data; treat them as empty.
+        if (!personal || !this.vaultsGlobal[vaultAddr]) {
+            return { shares: 0n, assets: 0n, value: 0n, valueNum: 0, debt: 0n, debtValue: 0n, debtValueNum: 0 };
+        }
+
+        let shares = personal.balance;
         let assets = this.sharesToAssets(vaultAddr, shares);
         let value = this.amountToValue(vaultAddr, assets);
-        let debt = vaultsPersonal[vaultAddr].debt;
+        let debt = personal.debt;
         let debtValue = this.amountToValue(vaultAddr, debt);
 
         return {
@@ -323,6 +341,7 @@ export class GlobalContext {
 
     getIRs(vaultAddr) {
         let vg = this.vaultsGlobal[vaultAddr];
+        if (!vg) return { borrowAPY: NaN, supplyAPY: NaN };
         return {
             borrowAPY: Number(vg.borrowAPY) / 1e9,
             supplyAPY: Number(vg.supplyAPY) / 1e9,

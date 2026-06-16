@@ -173,17 +173,24 @@ export function useVaultsGlobal(vaultAddrs) {
         queryFn: async () => {
             if (vaultAddrs.length === 0) return {};
 
-            let raw = await client.readContract({
-                address: currChain.addresses.maglevAddrs.maglevLens,
-                abi: maglevLensAbi.abi,
-                functionName: 'vaultsGlobal',
-                args: [vaultAddrs],
+            // Read each vault separately via multicall with allowFailure so that
+            // a single unsupported vault (e.g. a collateral-only vault that has no
+            // borrow/APY state and reverts) doesn't take down the whole batch.
+            let results = await client.multicall({
+                contracts: vaultAddrs.map(vault => ({
+                    address: currChain.addresses.maglevAddrs.maglevLens,
+                    abi: maglevLensAbi.abi,
+                    functionName: 'vaultsGlobal',
+                    args: [[vault]],
+                })),
+                allowFailure: true,
             });
 
             let output = {};
 
             for (let i = 0; i < vaultAddrs.length; i++) {
-                output[vaultAddrs[i]] = decodeVaultGlobal(raw[i]);
+                if (results[i].status !== 'success') continue;
+                output[vaultAddrs[i]] = decodeVaultGlobal(results[i].result[0]);
             }
 
             return output;
@@ -268,6 +275,42 @@ function decodeVaultsPersonalInfo(me, subAccountBitmask, vaultAddrs, raw) {
     return output;
 }
 
+// Read personal state for each vault separately via multicall with allowFailure,
+// so a single unsupported vault (one that reverts in vaultsPersonalState, e.g. a
+// collateral-only vault) doesn't take down the whole batch. Vaults that revert are
+// simply omitted from the returned per-subaccount maps; callers must tolerate a
+// missing vault entry. The output shape matches decodeVaultsPersonalInfo: an object
+// keyed by subaccount id, each an object keyed by vault address.
+async function readVaultsPersonalState(client, currChain, me, subAccountBitmask, vaultAddrs) {
+    // Seed every requested subaccount so callers can always iterate the masks.
+    let output = {};
+    for (let i = 0; i < 256; i++) {
+        if ((subAccountBitmask & (1n << BigInt(i))) !== 0n) output[i] = {};
+    }
+
+    if (vaultAddrs.length === 0) return output;
+
+    let results = await client.multicall({
+        contracts: vaultAddrs.map(vault => ({
+            address: currChain.addresses.maglevAddrs.maglevLens,
+            abi: maglevLensAbi.abi,
+            functionName: 'vaultsPersonalState',
+            args: [currChain.addresses.coreAddrs.evc, me, subAccountBitmask, [vault]],
+        })),
+        allowFailure: true,
+    });
+
+    for (let i = 0; i < vaultAddrs.length; i++) {
+        if (results[i].status !== 'success') continue;
+        let decoded = decodeVaultsPersonalInfo(me, subAccountBitmask, [vaultAddrs[i]], [...results[i].result]);
+        for (let subId of Object.keys(decoded)) {
+            output[subId][vaultAddrs[i]] = decoded[subId][vaultAddrs[i]];
+        }
+    }
+
+    return output;
+}
+
 export function useVaultsPersonalInfo(me, vaultAddrs) {
     let { data: currChain, isPending: pending1 } = useEulerChain();
     let client = usePublicClient();
@@ -278,16 +321,8 @@ export function useVaultsPersonalInfo(me, vaultAddrs) {
         enabled: !!me && !pending1 && vaultAddrs !== undefined,
         ...getErrorHandlingOptions('useVaultsPersonalInfo'),
         queryFn: async () => {
-            if (vaultAddrs.length === 0) return {};
-
-            let raw = await client.readContract({
-                address: currChain.addresses.maglevAddrs.maglevLens,
-                abi: maglevLensAbi.abi,
-                functionName: 'vaultsPersonalState',
-                args: [currChain.addresses.coreAddrs.evc, me, 1n, vaultAddrs],
-            });
-
-            return decodeVaultsPersonalInfo(me, 1n, vaultAddrs, raw)[0];
+            let output = await readVaultsPersonalState(client, currChain, me, 1n, vaultAddrs);
+            return output[0];
         },
     });
 }
@@ -302,16 +337,7 @@ export function useVaultsPersonalInfoMulti(me, subAccountBitmask, vaultAddrs) {
         enabled: !!me && !pending1 && vaultAddrs !== undefined,
         ...getErrorHandlingOptions('useVaultsPersonalInfoMulti'),
         queryFn: async () => {
-            if (vaultAddrs.length === 0) return {};
-
-            let raw = await client.readContract({
-                address: currChain.addresses.maglevAddrs.maglevLens,
-                abi: maglevLensAbi.abi,
-                functionName: 'vaultsPersonalState',
-                args: [currChain.addresses.coreAddrs.evc, me, subAccountBitmask, vaultAddrs],
-            });
-
-            return decodeVaultsPersonalInfo(me, subAccountBitmask, vaultAddrs, raw);
+            return await readVaultsPersonalState(client, currChain, me, subAccountBitmask, vaultAddrs);
         },
     });
 }
