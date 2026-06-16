@@ -31,6 +31,10 @@ export function ProductsList(props) {
         for (let vault of product.vaults) {
             let global = ctx.vaultsGlobal[vault];
 
+            // Skip unsupported vaults (the lens reverts on their global state, e.g.
+            // collateral-only vaults), which contribute no supply/borrow figures.
+            if (!global) continue;
+
             value = accumulate(value, ctx.amountToValue(vault, global.assets));
             debtValue = accumulate(debtValue, ctx.amountToValue(vault, global.borrows));
         }

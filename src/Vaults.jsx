@@ -35,6 +35,25 @@ export function VaultList(props) {
 
     for (let vaultAddr of Object.keys(ctx.vaultsStatic)) {
         let global = ctx.vaultsGlobal[vaultAddr];
+
+        // Unsupported vaults (the lens reverts on their global state, e.g.
+        // collateral-only vaults) still show their name, but with no market data.
+        if (!global) {
+            rows.push({
+                vault: <div className="flex align-items-center">
+                    {ctx.renderVaultName(vaultAddr)}
+                </div>,
+                totalSupply: '—',
+                utilisation: '—',
+                supplyApy: '—',
+                borrowApy: '—',
+
+                val: undefined,
+                rawName: ctx.rawVaultName(vaultAddr).toLowerCase(),
+            });
+            continue;
+        }
+
         let irs = ctx.getIRs(vaultAddr);
 
         rows.push({
@@ -200,7 +219,9 @@ export function VaultInfo(props) {
         },
     ];
 
-    let statsRows = [
+    // Unsupported vaults (the lens reverts on their global state, e.g.
+    // collateral-only vaults) have no readable supply/borrow/cap figures.
+    let statsRows = vaultGlobal ? [
         {
             attr: 'Total Supply',
             value: ctx.renderUnderlying(params.vault, vaultGlobal.assets),
@@ -221,20 +242,26 @@ export function VaultInfo(props) {
             attr: 'Borrow APY',
             value: <div>{(irs.borrowAPY * 100).toFixed(3)}%</div>,
         },
+    ] : [
+        { attr: 'Total Supply', value: '—' },
+        { attr: 'Total Borrows', value: '—' },
+        { attr: 'Utilisation', value: '—' },
+        { attr: 'Supply APY', value: '—' },
+        { attr: 'Borrow APY', value: '—' },
     ];
 
-    let supplyCap = decodeCap(vaultGlobal.supplyCap);
-    let borrowCap = decodeCap(vaultGlobal.borrowCap);
+    let supplyCap = vaultGlobal ? decodeCap(vaultGlobal.supplyCap) : undefined;
+    let borrowCap = vaultGlobal ? decodeCap(vaultGlobal.borrowCap) : undefined;
     let badDebtSocialisation = !(vaultDetailed.configFlags & (1 << 0));
 
     let riskRows = [
         {
             attr: 'Supply Cap',
-            value: supplyCap === undefined ? 'Unlimited' : ctx.renderUnderlying(params.vault, supplyCap),
+            value: !vaultGlobal ? '—' : supplyCap === undefined ? 'Unlimited' : ctx.renderUnderlying(params.vault, supplyCap),
         },
         {
             attr: 'Borrow Cap',
-            value: borrowCap === undefined ? 'Unlimited' : ctx.renderUnderlying(params.vault, borrowCap),
+            value: !vaultGlobal ? '—' : borrowCap === undefined ? 'Unlimited' : ctx.renderUnderlying(params.vault, borrowCap),
         },
         {
             attr: 'Max Liquidation Discount',
