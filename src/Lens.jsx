@@ -86,6 +86,27 @@ export function useLabels() {
 
 
 
+async function fetchPrices(chainId) {
+    let output = {};
+    let offset = 0;
+    const limit = 100;
+
+    for (;;) {
+        let response = await fetch(`https://v3.euler.finance/v3/prices?chainId=${chainId}&limit=${limit}&offset=${offset}`);
+        if (!response.ok) throw new Error(`Failed to fetch prices: ${response.status} ${response.statusText}`);
+
+        let json = await response.json();
+        for (let price of json.data || []) {
+            output[getAddress(price.address)] = { price: price.priceUsd, };
+        }
+
+        if (!json.meta?.hasMore) break;
+        offset += limit;
+    }
+
+    return output;
+}
+
 export function usePrices() {
     let myChainId = useChainId();
 
@@ -95,9 +116,7 @@ export function usePrices() {
         queryFn: async () => {
             if (myChainId === 31337) return { 31337: prices31337, };
 
-            let response = await fetch(`https://indexer.euler.finance/v1/prices?chainId=${myChainId}`);
-            let json = await response.json();
-            return { [myChainId]: json, };
+            return { [myChainId]: await fetchPrices(myChainId), };
         },
         select: (data) => data[myChainId],
     });
