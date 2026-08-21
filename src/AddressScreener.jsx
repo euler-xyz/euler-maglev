@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 // Address screening goes through the euler-lite server proxy, which holds
 // the compliance API key (this app has no server of its own). The screening
@@ -21,8 +21,15 @@ const SCREENING_TIMEOUT_MS = 15000;
 // 'pending', so a delayed verdict for a previous address can neither block
 // nor clear the current one — and a blocked state is dropped the moment the
 // address changes, recovering automatically on a later clean account.
+//
+// `retry()` re-runs the check for the current address, so a transient
+// failure (timeout, 429/5xx, network blip) has an in-app recovery path
+// while actions stay gated.
 export function useAddressScreening(address) {
     const [state, setState] = useState({ address: undefined, status: 'idle' });
+    const [attempt, setAttempt] = useState(0);
+
+    const retry = useCallback(() => setAttempt(a => a + 1), []);
 
     useEffect(() => {
         if (!address) {
@@ -68,10 +75,16 @@ export function useAddressScreening(address) {
         screen();
 
         return () => { cancelled = true; };
-    }, [address]);
+    }, [address, attempt]);
 
-    if (!address) return 'idle';
-    // Guard against render-before-effect and any state carried over from a
-    // previous address: only a verdict measured for this address counts.
-    return state.address === address ? state.status : 'pending';
+    let status;
+    if (!address) {
+        status = 'idle';
+    } else {
+        // Guard against render-before-effect and any state carried over from
+        // a previous address: only a verdict measured for this address counts.
+        status = state.address === address ? state.status : 'pending';
+    }
+
+    return { status, retry };
 }
