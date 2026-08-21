@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 // Address screening goes through the euler-lite server proxy, which holds
 // the compliance API key (this app has no server of its own). The screening
@@ -10,15 +10,32 @@ const SCREENING_ENDPOINT = import.meta.env.VITE_SCREENING_URI
 
 const SCREENING_TIMEOUT_MS = 15000;
 
-// Fail-closed: a failed or timed-out screening call blocks exactly like a
-// flagged address, and only an explicit `false` verdict clears it.
-export function useAddressChecker(address, setSuspicious) {
-    useEffect(() => {
-        if (!address) return;
+// Screening state machine, keyed to the address it was measured for:
+//   'idle'    — no address connected, nothing to screen
+//   'pending' — verdict not yet known; callers must not treat this as clear
+//   'clear'   — explicit clean verdict for the current address
+//   'blocked' — flagged, or any failure (fail-closed)
+//
+// Results are bound to the address that requested them: a change of address
+// cancels the in-flight check (via the effect cleanup) and restarts from
+// 'pending', so a delayed verdict for a previous address can neither block
+// nor clear the current one — and a blocked state is dropped the moment the
+// address changes, recovering automatically on a later clean account.
+export function useAddressScreening(address) {
+    const [state, setState] = useState({ address: undefined, status: 'idle' });
 
-        let fetchAddressInfo = async () => {
+    useEffect(() => {
+        if (!address) {
+            setState({ address: undefined, status: 'idle' });
+            return;
+        }
+
+        let cancelled = false;
+        setState({ address, status: 'pending' });
+
+        const screen = async () => {
             try {
-                let response = await fetch(SCREENING_ENDPOINT, {
+                const response = await fetch(SCREENING_ENDPOINT, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -27,22 +44,34 @@ export function useAddressChecker(address, setSuspicious) {
                     signal: AbortSignal.timeout(SCREENING_TIMEOUT_MS),
                 });
 
+                if (cancelled) return;
+
                 if (!response.ok) {
-                    setSuspicious(true);
+                    setState({ address, status: 'blocked' });
                     return;
                 }
 
-                let data = await response.json();
+                const data = await response.json();
+                if (cancelled) return;
 
-                if (data?.addressIsSuspicious !== false) {
-                    setSuspicious(true);
-                }
+                setState({
+                    address,
+                    status: data?.addressIsSuspicious === false ? 'clear' : 'blocked',
+                });
             } catch (err) {
+                if (cancelled) return;
                 console.warn("Screening check failed — failing closed", err);
-                setSuspicious(true);
+                setState({ address, status: 'blocked' });
             }
         };
 
-        fetchAddressInfo();
+        screen();
+
+        return () => { cancelled = true; };
     }, [address]);
+
+    if (!address) return 'idle';
+    // Guard against render-before-effect and any state carried over from a
+    // previous address: only a verdict measured for this address counts.
+    return state.address === address ? state.status : 'pending';
 }

@@ -11,7 +11,7 @@ import { Tooltip as ReactTooltip } from 'react-tooltip';
 import { Dropdown } from 'primereact/dropdown';
 import { Message } from 'primereact/message';
 
-import { useAddressChecker } from "./AddressScreener";
+import { useAddressScreening } from "./AddressScreener";
 import { useGlobalContext } from "./Ctx";
 import { getWagmiChainConfigs } from './ChainConfig';
 import { VaultList, VaultInfo } from './Vaults';
@@ -76,11 +76,11 @@ function Main() {
     });
     let withSpyAddr = (path) => spyAddr ? `${path}?addr=${spyAddr}` : path;
 
-    let [suspicious, setSuspicious] = useState(false);
-    useAddressChecker(ctx.myPrimaryAddr, setSuspicious);
+    let screening = useAddressScreening(ctx.myPrimaryAddr);
 
-
-    if (suspicious) return 'Error loading address data.';
+    if (screening === 'blocked') return 'Error loading address data.';
+    // Pending is not clearance: hold the app until the verdict arrives.
+    if (screening === 'pending') return <div className="main">Verifying address...</div>;
     if (spyAddrError) return <div className="main">{spyAddrError}</div>;
 
     return <div className="main">
