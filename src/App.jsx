@@ -11,7 +11,7 @@ import { Tooltip as ReactTooltip } from 'react-tooltip';
 import { Dropdown } from 'primereact/dropdown';
 import { Message } from 'primereact/message';
 
-import { useAddressChecker } from "./AddressScreener";
+import { useAddressScreening } from "./AddressScreener";
 import { useGlobalContext } from "./Ctx";
 import { getWagmiChainConfigs } from './ChainConfig';
 import { VaultList, VaultInfo } from './Vaults';
@@ -76,11 +76,23 @@ function Main() {
     });
     let withSpyAddr = (path) => spyAddr ? `${path}?addr=${spyAddr}` : path;
 
-    let [suspicious, setSuspicious] = useState(false);
-    useAddressChecker(ctx.myPrimaryAddr, setSuspicious);
+    let { status: screening, retry: retryScreening } = useAddressScreening(ctx.myPrimaryAddr);
 
-
-    if (suspicious) return 'Error loading address data.';
+    // Pending is not clearance, and blocked must stay recoverable: both
+    // states keep the app shell (header + wallet controls) so the user can
+    // retry a transient failure or switch to a different wallet, while all
+    // actionable content stays withheld.
+    if (screening === 'pending' || screening === 'blocked') {
+        return <div className="main">
+            <Header ctx={ctx} />
+            {screening === 'pending'
+                ? <Message severity="info" text="Verifying address..." className="mb-3" />
+                : <>
+                    <Message severity="error" text="Address verification failed or this address cannot use the app." className="mb-3" />
+                    <button className="p-button p-component" onClick={retryScreening}>Retry verification</button>
+                </>}
+        </div>;
+    }
     if (spyAddrError) return <div className="main">{spyAddrError}</div>;
 
     return <div className="main">
