@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 0
+          submodules: true
+
+      - name: Setup Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install (clean, from lockfile)
+        run: npm ci --no-audit --no-fund
+
+      - name: Lockfile-drift check
+        run: |
+          set -euo pipefail
+          base="${{ github.event.pull_request.base.sha || 'HEAD~1' }}"
+          lock_changed=$(git diff --name-only "$base" HEAD -- package-lock.json | wc -l | tr -d ' ')
+          manifest_changed=$(git diff --name-only "$base" HEAD -- package.json | wc -l | tr -d ' ')
+          if [ "$lock_changed" != "0" ] && [ "$manifest_changed" = "0" ]; then
+            echo "::error::Lockfile changed with no matching package.json change — refusing to merge."
+            exit 1
+          fi
+
+      - name: Audit (high+)
+        run: npm audit --audit-level=high
+
+      - name: Build
+        env:
+          VITE_SKIP_DEVLAND: "true"
+        run: npm run build
