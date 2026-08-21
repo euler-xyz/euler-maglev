@@ -6,7 +6,7 @@ import { useEffect } from 'react';
 // neutral `{ addressIsSuspicious }` contract. The VPN flag is derived
 // server-side from edge-set headers, so the body only carries the address.
 const SCREENING_ENDPOINT = import.meta.env.VITE_SCREENING_URI
-    ?? 'https://app.euler.finance/api/public/screen-address';
+    ?? 'https://app.euler.finance/api/internal/screen-address';
 
 const SCREENING_TIMEOUT_MS = 15000;
 
